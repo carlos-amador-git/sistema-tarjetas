@@ -1,0 +1,169 @@
+{
+  "description": "Agentes especializados para el proyecto CardSystem",
+  "version": "1.0.0",
+  "agents": [
+    {
+      "id": "inventory-expert",
+      "name": "Experto en Inventario",
+      "trigger": "Cuando se trabaje con balance, capturas, movimientos o stock",
+      "context": [
+        "El balance tiene 4 áreas: Almacén (bóveda trabajo + principal), En Proceso, Logística (colocación + normal + devoluciones), Sucursales (colocación + stock)",
+        "Las capturas actualizan el balance en tiempo real via inventoryStore",
+        "Los movimientos se registran automáticamente en historial",
+        "Datos centralizados en src/data/mockData.ts"
+      ],
+      "files": [
+        "src/stores/inventoryStore.ts",
+        "src/data/mockData.ts",
+        "src/app/(dashboard)/balance/page.tsx",
+        "src/app/(dashboard)/capturas/*/page.tsx"
+      ]
+    },
+    {
+      "id": "security-expert",
+      "name": "Experto en Seguridad",
+      "trigger": "Cuando se trabaje con autenticación, tokens, CSRF, rate limiting o auditoría",
+      "context": [
+        "Tokens almacenados en httpOnly cookies (no localStorage)",
+        "Rate limiting: 5 intentos/min, bloqueo 5 min",
+        "CSRF: Double Submit Cookie pattern",
+        "Sanitización XSS en todos los inputs",
+        "Audit logging para acciones críticas"
+      ],
+      "files": [
+        "src/lib/security/rateLimit.ts",
+        "src/lib/security/csrf.ts",
+        "src/lib/security/sanitize.ts",
+        "src/lib/security/auditLog.ts",
+        "src/app/api/auth/login/route.ts",
+        "src/app/api/auth/csrf/route.ts"
+      ]
+    },
+    {
+      "id": "testing-expert",
+      "name": "Experto en Testing",
+      "trigger": "Cuando se escriban tests, se mejore coverage, o se depuren errores de tests",
+      "context": [
+        "Jest configurado con ts-jest y jsdom",
+        "91 tests actuales pasando",
+        "37 tests de seguridad en src/__tests__/security/",
+        "Playwright configurado para E2E",
+        "Coverage objetivo: > 70%"
+      ],
+      "files": [
+        "jest.config.js",
+        "jest.setup.js",
+        "playwright.config.ts",
+        "src/__tests__/**/*"
+      ],
+      "commands": {
+        "runTests": "npm test",
+        "runCoverage": "npm run test:coverage",
+        "runE2E": "npm run e2e",
+        "runE2EUI": "npm run e2e:ui"
+      }
+    },
+    {
+      "id": "crud-expert",
+      "name": "Experto en CRUD",
+      "trigger": "Cuando se trabaje con formularios, modales, crear/editar/eliminar usuarios, productos u órdenes",
+      "context": [
+        "Formularios en src/components/forms/",
+        "Modal reutilizable en src/components/ui/Modal.tsx",
+        "Toast notifications integradas",
+        "Stores: userStore.ts, productStore.ts, inventoryStore.ts",
+        "Validación en cliente antes de submit"
+      ],
+      "files": [
+        "src/components/forms/NuevoUsuarioForm.tsx",
+        "src/components/forms/EditUsuarioForm.tsx",
+        "src/components/forms/NuevoProductoForm.tsx",
+        "src/components/forms/EditProductoForm.tsx",
+        "src/components/forms/NuevaOrdenForm.tsx",
+        "src/stores/userStore.ts",
+        "src/stores/productStore.ts"
+      ]
+    },
+    {
+      "id": "tenant-expert",
+      "name": "Experto en Multi-Tenant",
+      "trigger": "Cuando se configure branding, se añadan nuevos tenants, o se trabaje con personalización",
+      "context": [
+        "Sistema white-label completamente personalizable",
+        "Configuración por tenant en src/config/tenants/",
+        "Assets por tenant en public/tenants/",
+        "Feature flags por tenant",
+        "TenantProvider envuelve toda la app"
+      ],
+      "files": [
+        "src/config/tenants/index.ts",
+        "src/config/tenants/default.ts",
+        "src/config/branding.ts",
+        "src/hooks/useTenant.tsx",
+        "docs/MULTI_TENANT.md"
+      ]
+    },
+    {
+      "id": "deploy-expert",
+      "name": "Experto en Despliegue",
+      "trigger": "Cuando se prepare para producción, se configure Docker, o se despliegue a Antigravity",
+      "context": [
+        "Target: Antigravity",
+        "Docker configurado con healthcheck",
+        "Scripts automatizados en scripts/",
+        "Variables de entorno en .env.local (dev) y configuración Antigravity (prod)",
+        "NEXT_PUBLIC_DEMO_MODE=false en producción"
+      ],
+      "files": [
+        "Dockerfile",
+        "docker-compose.yml",
+        "DEPLOY.md",
+        "scripts/setup.sh",
+        "scripts/deploy-antigravity.sh",
+        "next.config.ts"
+      ],
+      "commands": {
+        "buildDocker": "docker build -t cardsystem .",
+        "runDocker": "docker run -p 3000:3000 cardsystem",
+        "deploy": "./scripts/deploy-antigravity.sh"
+      }
+    },
+    {
+      "id": "database-expert",
+      "name": "Experto en Base de Datos",
+      "trigger": "Cuando se modifique el schema, se hagan migraciones, o se trabaje con Prisma",
+      "context": [
+        "SQLite via Prisma + libsql",
+        "Schema en prisma/schema.prisma",
+        "9 modelos: User, AuditLog, RateLimit, Producto, BalanceProducto, Captura, MovimientoHistorial, OrdenCompra, ForecastProducto",
+        "Seed data en prisma/seed.ts"
+      ],
+      "files": [
+        "prisma/schema.prisma",
+        "prisma/seed.ts",
+        "prisma.config.ts"
+      ],
+      "commands": {
+        "generate": "npm run db:generate",
+        "migrate": "npm run db:migrate",
+        "push": "npm run db:push",
+        "studio": "npm run db:studio",
+        "seed": "npm run db:seed"
+      }
+    }
+  ],
+  "globalContext": {
+    "projectName": "CardSystem",
+    "mainLanguage": "TypeScript",
+    "framework": "Next.js 16 (App Router)",
+    "stateManagement": "Zustand con persistencia localStorage",
+    "currentPhase": "Fase 3 - Testing y Optimización",
+    "criticalFiles": [
+      "src/data/mockData.ts",
+      "src/stores/inventoryStore.ts",
+      "prisma/schema.prisma",
+      "AUDITORIA_FUNCIONAL.md"
+    ]
+  },
+  "lastUpdated": "2026-01-22"
+}

@@ -1,0 +1,162 @@
+{
+  "project": {
+    "name": "CardSystem",
+    "fullName": "Sistema de Inventario de Tarjetas Bancarias",
+    "version": "0.1.0",
+    "description": "Sistema white-label para gestión de inventario de tarjetas bancarias con forecasting, multi-tenant y control por roles",
+    "repository": null,
+    "license": "Proprietary"
+  },
+  "stack": {
+    "frontend": {
+      "framework": "Next.js 16.1.4",
+      "ui": "React 19.2.3",
+      "language": "TypeScript 5",
+      "styling": "Tailwind CSS 4",
+      "stateManagement": "Zustand 5.0.10",
+      "dataFetching": "@tanstack/react-query 5.90.19",
+      "charts": "Recharts 3.6.0",
+      "icons": "Lucide React",
+      "exports": ["xlsx", "jspdf", "jspdf-autotable"]
+    },
+    "backend": {
+      "orm": "Prisma 7.3.0",
+      "database": "SQLite (via @libsql/client)",
+      "auth": ["bcrypt", "jsonwebtoken", "speakeasy (2FA)"],
+      "monitoring": "@sentry/nextjs"
+    },
+    "testing": {
+      "unit": "Jest 30.2.0",
+      "e2e": "Playwright 1.57.0",
+      "utilities": ["@testing-library/react", "@testing-library/jest-dom"]
+    }
+  },
+  "architecture": {
+    "pattern": "Next.js App Router",
+    "routeGroups": {
+      "(auth)": "Autenticación - /login",
+      "(dashboard)": "Dashboard protegido - todas las rutas principales"
+    },
+    "modules": [
+      { "name": "Dashboard", "route": "/dashboard", "description": "Vista general y estadísticas" },
+      { "name": "Balance", "route": "/balance", "description": "Estado actual del inventario" },
+      { "name": "Forecast", "route": "/forecast", "description": "Proyecciones y alertas" },
+      { "name": "Captura Almacén", "route": "/capturas/almacen", "description": "Registro inventario central" },
+      { "name": "Captura Logística", "route": "/capturas/logistica", "description": "Registro en distribución" },
+      { "name": "Captura Sucursales", "route": "/capturas/sucursales", "description": "Registro en puntos de venta" },
+      { "name": "Órdenes", "route": "/ordenes", "description": "Gestión de compras" },
+      { "name": "Productos", "route": "/productos", "description": "Catálogo de productos" },
+      { "name": "Usuarios", "route": "/usuarios", "description": "Administración de usuarios" },
+      { "name": "Historial", "route": "/historial", "description": "Log de movimientos" }
+    ],
+    "stores": {
+      "inventoryStore": "src/stores/inventoryStore.ts - Balance, historial, órdenes",
+      "userStore": "src/stores/userStore.ts - CRUD usuarios",
+      "productStore": "src/stores/productStore.ts - CRUD productos"
+    },
+    "security": {
+      "location": "src/lib/security/",
+      "modules": ["rateLimit.ts", "csrf.ts", "sanitize.ts", "auditLog.ts"]
+    }
+  },
+  "database": {
+    "provider": "sqlite",
+    "models": [
+      "User",
+      "AuditLog",
+      "RateLimit",
+      "Producto",
+      "BalanceProducto",
+      "Captura",
+      "MovimientoHistorial",
+      "OrdenCompra",
+      "ForecastProducto"
+    ],
+    "location": "dev.db"
+  },
+  "roles": [
+    { "id": "admin", "area": "Administración", "access": "Todos los módulos" },
+    { "id": "almacen", "alias": "tsys", "area": "Almacén Central", "access": "Dashboard, Balance, Captura Almacén" },
+    { "id": "logistica", "alias": "distribucion", "area": "Distribución", "access": "Dashboard, Balance, Captura Logística" },
+    { "id": "sucursales", "alias": "modulos", "area": "Puntos de Venta", "access": "Dashboard, Balance, Captura Sucursales" },
+    { "id": "consulta", "area": "Dirección", "access": "Dashboard, Balance, Forecast, Historial (solo lectura)" }
+  ],
+  "status": {
+    "score": 92,
+    "rating": "Excelente",
+    "lastAudit": "2026-01-21",
+    "completedSprints": [7, 8, 9, 10, 11],
+    "currentPhase": "Fase 3 - Calidad",
+    "pendingSprints": [12, 13],
+    "testsCount": 176,
+    "securityFeatures": [
+      "httpOnly cookies",
+      "Rate limiting (5 intentos/min)",
+      "CSRF tokens",
+      "XSS sanitization",
+      "Audit logging",
+      "2FA support (TOTP)"
+    ]
+  },
+  "pendingWork": {
+    "sprint12": {
+      "name": "Testing Completo",
+      "tasks": [
+        "Tests de componentes (70% coverage UI)",
+        "Tests de integración",
+        "E2E con Playwright",
+        "Coverage reporting"
+      ]
+    },
+    "sprint13": {
+      "name": "Optimización y Polish",
+      "tasks": [
+        "Implementar React Query para cache",
+        "Optimizar bundle size (< 200KB)",
+        "Lazy loading módulos",
+        "Documentación técnica"
+      ]
+    }
+  },
+  "scripts": {
+    "dev": "npm run dev",
+    "build": "npm run build",
+    "start": "npm start",
+    "test": "npm test",
+    "testCoverage": "npm run test:coverage",
+    "e2e": "npm run e2e",
+    "dbStudio": "npm run db:studio",
+    "dbMigrate": "npm run db:migrate"
+  },
+  "deployment": {
+    "target": "Antigravity",
+    "docker": true,
+    "port": 3000,
+    "scripts": ["scripts/setup.sh", "scripts/deploy-antigravity.sh"]
+  },
+  "importantPaths": {
+    "mockData": "src/data/mockData.ts",
+    "apiRoutes": "src/app/api/",
+    "components": "src/components/",
+    "stores": "src/stores/",
+    "security": "src/lib/security/",
+    "tenantConfig": "src/config/tenants/",
+    "prismaSchema": "prisma/schema.prisma"
+  },
+  "knownIssues": [
+    {
+      "id": "LOCATION-001",
+      "severity": "resolved",
+      "description": "Proyecto migrado exitosamente de Google Drive",
+      "solution": "Completado 2026-01-22 - Nueva ubicación: ~/Projects/sistema-tarjetas"
+    },
+    {
+      "id": "TEST-001",
+      "severity": "medium",
+      "description": "Coverage E2E pendiente",
+      "solution": "Completar Sprint 12"
+    }
+  ],
+  "lastUpdated": "2026-01-22T13:25:00Z",
+  "location": "~/Projects/sistema-tarjetas"
+}
