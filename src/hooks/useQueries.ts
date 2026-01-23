@@ -1,15 +1,99 @@
 /**
  * Hooks de React Query para data fetching
  *
+ * ACTUALIZADO: Ahora usa APIs REST con Prisma en lugar de mockData
+ *
  * Proporciona cache, deduplicación de requests, y sincronización
  * automática de datos entre componentes.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useInventoryStore } from '@/stores/inventoryStore';
-import { useUserStore } from '@/stores/userStore';
-import { useProductStore, type Producto } from '@/stores/productStore';
-import { type OrdenCompra } from '@/data/mockData';
+import api from '@/lib/api';
+
+// =============================================================================
+// TIPOS
+// =============================================================================
+
+export interface Producto {
+  id: string;
+  nombre: string;
+  categoria: string;
+  areas: string[];
+  stock: number;
+  stockMinimo: number;
+  precio: number;
+  activo: boolean;
+}
+
+export interface BalanceProducto {
+  productoId: string;
+  nombre: string;
+  almacen: {
+    bovedaTrabajo: number;
+    bovedaPrincipal: number;
+    total: number;
+  };
+  enProceso: {
+    cantidad: number;
+    ordenesActivas: number;
+  };
+  logistica: {
+    colocacion: number;
+    normal: number;
+    devoluciones: number;
+    total: number;
+  };
+  sucursales: {
+    colocacion: number;
+    stock: number;
+    total: number;
+  };
+  totalGeneral: number;
+}
+
+export interface ResumenGlobal {
+  totalInventario: number;
+  enAlmacen: number;
+  enLogistica: number;
+  enSucursales: number;
+  enProceso: number;
+}
+
+export interface MovimientoHistorial {
+  id: number;
+  fecha: string;
+  tipo: 'ENTRADA' | 'SALIDA' | 'AJUSTE';
+  productoId: string;
+  producto: string;
+  cantidad: number;
+  usuario: string;
+  area: string;
+  observacion: string;
+  documento: string;
+}
+
+export interface OrdenCompra {
+  id: string;
+  fecha: string;
+  productoId: string;
+  producto: string;
+  cantidad: number;
+  solicitante: string;
+  area: string;
+  estatus: 'PENDIENTE' | 'APROBADA' | 'COMPLETADA' | 'RECHAZADA';
+  costoTotal: number;
+}
+
+export interface Usuario {
+  id: number;
+  nombre: string;
+  username: string;
+  email: string;
+  rol: string;
+  area: string;
+  activo: boolean;
+  ultimoAcceso?: string;
+}
 
 // =============================================================================
 // QUERY KEYS
@@ -34,32 +118,32 @@ export const queryKeys = {
 };
 
 // =============================================================================
-// INVENTORY QUERIES
+// INVENTORY QUERIES - Usando APIs
 // =============================================================================
 
 /**
- * Hook para obtener el balance de inventario con cache
+ * Hook para obtener el balance de inventario
  */
 export function useBalance() {
   return useQuery({
     queryKey: queryKeys.balance,
-    queryFn: () => {
-      const { balance } = useInventoryStore.getState();
-      return balance;
+    queryFn: async () => {
+      const response = await api.get<{ balance: Record<string, BalanceProducto>; resumen: ResumenGlobal }>('/api/balance');
+      return response.balance;
     },
-    staleTime: 30 * 1000, // 30 segundos
+    staleTime: 30 * 1000,
   });
 }
 
 /**
- * Hook para obtener el resumen global con cache
+ * Hook para obtener el resumen global
  */
 export function useResumenGlobal() {
   return useQuery({
     queryKey: queryKeys.resumenGlobal,
-    queryFn: () => {
-      const { getResumenGlobal } = useInventoryStore.getState();
-      return getResumenGlobal();
+    queryFn: async () => {
+      const response = await api.get<{ balance: Record<string, BalanceProducto>; resumen: ResumenGlobal }>('/api/balance');
+      return response.resumen;
     },
     staleTime: 30 * 1000,
   });
@@ -76,26 +160,16 @@ export function useHistorial(filters?: {
 }) {
   return useQuery({
     queryKey: [...queryKeys.historial, filters],
-    queryFn: () => {
-      const { historial } = useInventoryStore.getState();
-      let filtered = historial;
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters?.productoId) params.set('productoId', filters.productoId);
+      if (filters?.tipo) params.set('tipo', filters.tipo);
 
-      if (filters?.productoId) {
-        filtered = filtered.filter((h) => h.productoId === filters.productoId);
-      }
-      if (filters?.tipo) {
-        filtered = filtered.filter((h) => h.tipo === filters.tipo);
-      }
-      if (filters?.startDate) {
-        filtered = filtered.filter((h) => h.fecha >= filters.startDate!);
-      }
-      if (filters?.endDate) {
-        filtered = filtered.filter((h) => h.fecha <= filters.endDate!);
-      }
-
-      return filtered;
+      const url = `/api/historial${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await api.get<{ movimientos: MovimientoHistorial[]; total: number }>(url);
+      return response.movimientos;
     },
-    staleTime: 60 * 1000, // 1 minuto
+    staleTime: 60 * 1000,
   });
 }
 
@@ -108,25 +182,21 @@ export function useOrdenes(filters?: {
 }) {
   return useQuery({
     queryKey: [...queryKeys.ordenes, filters],
-    queryFn: () => {
-      const { ordenes } = useInventoryStore.getState();
-      let filtered = ordenes;
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters?.estatus) params.set('estatus', filters.estatus);
+      if (filters?.productoId) params.set('productoId', filters.productoId);
 
-      if (filters?.estatus) {
-        filtered = filtered.filter((o) => o.estatus === filters.estatus);
-      }
-      if (filters?.productoId) {
-        filtered = filtered.filter((o) => o.productoId === filters.productoId);
-      }
-
-      return filtered;
+      const url = `/api/ordenes${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await api.get<{ ordenes: OrdenCompra[] }>(url);
+      return response.ordenes;
     },
     staleTime: 30 * 1000,
   });
 }
 
 // =============================================================================
-// INVENTORY MUTATIONS
+// INVENTORY MUTATIONS - Usando APIs
 // =============================================================================
 
 /**
@@ -136,13 +206,11 @@ export function useCrearOrden() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (orden: Omit<OrdenCompra, 'id'>) => {
-      const { crearOrden } = useInventoryStore.getState();
-      const id = crearOrden(orden);
-      return Promise.resolve(id);
+    mutationFn: async (orden: { productoId: string; cantidad: number; userId: number; area: string }) => {
+      const response = await api.post<OrdenCompra>('/api/ordenes', orden);
+      return response.id;
     },
     onSuccess: () => {
-      // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: queryKeys.ordenes });
       queryClient.invalidateQueries({ queryKey: queryKeys.resumenGlobal });
     },
@@ -156,10 +224,8 @@ export function useActualizarEstatusOrden() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, estatus }: { id: string; estatus: OrdenCompra['estatus'] }) => {
-      const { actualizarEstatusOrden } = useInventoryStore.getState();
-      actualizarEstatusOrden(id, estatus);
-      return Promise.resolve();
+    mutationFn: async ({ id, estatus }: { id: string; estatus: OrdenCompra['estatus'] }) => {
+      await api.put(`/api/ordenes/${id}`, { estatus });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ordenes });
@@ -171,37 +237,226 @@ export function useActualizarEstatusOrden() {
 }
 
 /**
- * Mutation para registrar captura de almacén
+ * Mutation para registrar movimiento en historial
  */
-export function useRegistrarCapturaAlmacen() {
+export function useRegistrarMovimiento() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (captura: {
+    mutationFn: async (movimiento: {
+      tipo: 'ENTRADA' | 'SALIDA' | 'AJUSTE';
       productoId: string;
-      bovedaTrabajo: number;
-      bovedaPrincipal: number;
-      fecha: string;
-      usuario: string;
+      cantidad: number;
+      userId: number;
+      area: string;
+      observacion?: string;
+      documento: string;
     }) => {
-      const { registrarCapturaAlmacen } = useInventoryStore.getState();
-      registrarCapturaAlmacen(captura);
-      return Promise.resolve();
+      const response = await api.post<MovimientoHistorial>('/api/historial', movimiento);
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.balance });
       queryClient.invalidateQueries({ queryKey: queryKeys.historial });
+      queryClient.invalidateQueries({ queryKey: queryKeys.balance });
       queryClient.invalidateQueries({ queryKey: queryKeys.resumenGlobal });
     },
   });
 }
 
+/**
+ * Mutation para actualizar balance (capturas)
+ */
+export function useActualizarBalance() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ productoId, data }: {
+      productoId: string;
+      data: {
+        almacen?: { bovedaTrabajo?: number; bovedaPrincipal?: number };
+        logistica?: { colocacion?: number; normal?: number; devoluciones?: number };
+        sucursales?: { colocacion?: number; stock?: number };
+        enProceso?: { cantidad?: number; ordenesActivas?: number };
+      };
+    }) => {
+      await api.put(`/api/balance/${productoId}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.balance });
+      queryClient.invalidateQueries({ queryKey: queryKeys.resumenGlobal });
+    },
+  });
+}
+
+// Legacy alias for backward compatibility
+export const useRegistrarCapturaAlmacen = useActualizarBalance;
+
 // =============================================================================
-// USER QUERIES
+// PRODUCT QUERIES - Usando APIs
 // =============================================================================
 
 /**
+ * Hook para obtener todos los productos
+ */
+export function useProductos(filters?: {
+  categoria?: string;
+  activo?: boolean;
+  lowStock?: boolean;
+}) {
+  return useQuery({
+    queryKey: [...queryKeys.products, filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters?.categoria && filters.categoria !== 'todas') {
+        params.set('categoria', filters.categoria);
+      }
+      if (filters?.activo !== undefined) {
+        params.set('activo', String(filters.activo));
+      }
+
+      const url = `/api/productos${params.toString() ? '?' + params.toString() : ''}`;
+      const productos = await api.get<Producto[]>(url);
+
+      // Client-side filter for lowStock (API doesn't have this)
+      if (filters?.lowStock) {
+        return productos.filter((p) => p.stock <= p.stockMinimo);
+      }
+
+      return productos;
+    },
+    staleTime: 60 * 1000,
+  });
+}
+
+/**
+ * Hook para obtener un producto por ID
+ */
+export function useProducto(id: string) {
+  return useQuery({
+    queryKey: queryKeys.product(id),
+    queryFn: async () => {
+      const producto = await api.get<Producto>(`/api/productos/${id}`);
+      return producto;
+    },
+    enabled: !!id,
+  });
+}
+
+/**
+ * Hook para obtener productos con stock bajo
+ */
+export function useProductosStockBajo() {
+  return useQuery({
+    queryKey: [...queryKeys.products, 'lowStock'],
+    queryFn: async () => {
+      const productos = await api.get<Producto[]>('/api/productos');
+      return productos.filter((p) => p.stock <= p.stockMinimo);
+    },
+    staleTime: 30 * 1000,
+  });
+}
+
+// =============================================================================
+// PRODUCT MUTATIONS - Usando APIs
+// =============================================================================
+
+/**
+ * Mutation para crear producto
+ */
+export function useCrearProducto() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (producto: Omit<Producto, 'activo' | 'stock'>) => {
+      const response = await api.post<Producto>('/api/productos', producto);
+      return response.id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products });
+    },
+  });
+}
+
+/**
+ * Mutation para actualizar producto
+ */
+export function useActualizarProducto() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Producto> }) => {
+      await api.put(`/api/productos/${id}`, data);
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products });
+      queryClient.invalidateQueries({ queryKey: queryKeys.product(id) });
+    },
+  });
+}
+
+/**
+ * Mutation para eliminar producto (soft delete)
+ */
+export function useEliminarProducto() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/api/productos/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products });
+    },
+  });
+}
+
+/**
+ * Mutation para ajustar stock (via producto update)
+ */
+export function useAjustarStock() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      cantidad,
+      operacion,
+    }: {
+      id: string;
+      cantidad: number;
+      operacion: 'add' | 'subtract' | 'set';
+    }) => {
+      // Get current stock first
+      const producto = await api.get<Producto>(`/api/productos/${id}`);
+      let newStock = producto.stock;
+
+      if (operacion === 'add') {
+        newStock += cantidad;
+      } else if (operacion === 'subtract') {
+        newStock -= cantidad;
+      } else {
+        newStock = cantidad;
+      }
+
+      await api.put(`/api/productos/${id}`, { stock: newStock });
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products });
+      queryClient.invalidateQueries({ queryKey: queryKeys.product(id) });
+    },
+  });
+}
+
+// =============================================================================
+// USER QUERIES - Estos todavía usan el store (no hay API de usuarios aún)
+// =============================================================================
+
+// Importar stores para usuarios (aún no migrados a API)
+import { useUserStore } from '@/stores/userStore';
+
+/**
  * Hook para obtener todos los usuarios
+ * TODO: Migrar a API cuando se cree /api/usuarios
  */
 export function useUsuarios(filters?: {
   rol?: string;
@@ -245,12 +500,9 @@ export function useUsuario(id: number) {
 }
 
 // =============================================================================
-// USER MUTATIONS
+// USER MUTATIONS - Usando store (pendiente API)
 // =============================================================================
 
-/**
- * Mutation para crear usuario
- */
 export function useCrearUsuario() {
   const queryClient = useQueryClient();
 
@@ -266,9 +518,6 @@ export function useCrearUsuario() {
   });
 }
 
-/**
- * Mutation para actualizar usuario
- */
 export function useActualizarUsuario() {
   const queryClient = useQueryClient();
 
@@ -285,9 +534,6 @@ export function useActualizarUsuario() {
   });
 }
 
-/**
- * Mutation para eliminar usuario
- */
 export function useEliminarUsuario() {
   const queryClient = useQueryClient();
 
@@ -303,9 +549,6 @@ export function useEliminarUsuario() {
   });
 }
 
-/**
- * Mutation para toggle activo usuario
- */
 export function useToggleActivoUsuario() {
   const queryClient = useQueryClient();
 
@@ -318,154 +561,6 @@ export function useToggleActivoUsuario() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users });
       queryClient.invalidateQueries({ queryKey: queryKeys.user(id) });
-    },
-  });
-}
-
-// =============================================================================
-// PRODUCT QUERIES
-// =============================================================================
-
-/**
- * Hook para obtener todos los productos
- */
-export function useProductos(filters?: {
-  categoria?: string;
-  activo?: boolean;
-  lowStock?: boolean;
-}) {
-  return useQuery({
-    queryKey: [...queryKeys.products, filters],
-    queryFn: () => {
-      const { productos } = useProductStore.getState();
-      let filtered = productos;
-
-      if (filters?.categoria) {
-        filtered = filtered.filter((p) => p.categoria === filters.categoria);
-      }
-      if (filters?.activo !== undefined) {
-        filtered = filtered.filter((p) => p.activo === filters.activo);
-      }
-      if (filters?.lowStock) {
-        filtered = filtered.filter((p) => p.stock <= p.stockMinimo);
-      }
-
-      return filtered;
-    },
-    staleTime: 60 * 1000,
-  });
-}
-
-/**
- * Hook para obtener un producto por ID
- */
-export function useProducto(id: string) {
-  return useQuery({
-    queryKey: queryKeys.product(id),
-    queryFn: () => {
-      const { productos } = useProductStore.getState();
-      return productos.find((p) => p.id === id) || null;
-    },
-    enabled: !!id,
-  });
-}
-
-/**
- * Hook para obtener productos con stock bajo
- */
-export function useProductosStockBajo() {
-  return useQuery({
-    queryKey: [...queryKeys.products, 'lowStock'],
-    queryFn: () => {
-      const { productos } = useProductStore.getState();
-      return productos.filter((p) => p.stock <= p.stockMinimo);
-    },
-    staleTime: 30 * 1000,
-  });
-}
-
-// =============================================================================
-// PRODUCT MUTATIONS
-// =============================================================================
-
-/**
- * Mutation para crear producto
- */
-export function useCrearProducto() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (producto: Omit<Producto, 'id' | 'activo'>) => {
-      const { crearProducto } = useProductStore.getState();
-      const id = crearProducto(producto);
-      return Promise.resolve(id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.products });
-    },
-  });
-}
-
-/**
- * Mutation para actualizar producto
- */
-export function useActualizarProducto() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Producto> }) => {
-      const { actualizarProducto } = useProductStore.getState();
-      actualizarProducto(id, data);
-      return Promise.resolve();
-    },
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.products });
-      queryClient.invalidateQueries({ queryKey: queryKeys.product(id) });
-    },
-  });
-}
-
-/**
- * Mutation para eliminar producto
- */
-export function useEliminarProducto() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => {
-      const { eliminarProducto } = useProductStore.getState();
-      eliminarProducto(id);
-      return Promise.resolve();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.products });
-    },
-  });
-}
-
-/**
- * Mutation para ajustar stock
- */
-export function useAjustarStock() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      id,
-      cantidad,
-      operacion,
-    }: {
-      id: string;
-      cantidad: number;
-      operacion: 'add' | 'subtract' | 'set';
-    }) => {
-      const { ajustarStock } = useProductStore.getState();
-      ajustarStock(id, cantidad, operacion);
-      return Promise.resolve();
-    },
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.products });
-      queryClient.invalidateQueries({ queryKey: queryKeys.product(id) });
     },
   });
 }
@@ -495,20 +590,17 @@ export function usePrefetchDashboardData() {
     // Prefetch balance
     queryClient.prefetchQuery({
       queryKey: queryKeys.balance,
-      queryFn: () => useInventoryStore.getState().balance,
-    });
-
-    // Prefetch resumen
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.resumenGlobal,
-      queryFn: () => useInventoryStore.getState().getResumenGlobal(),
+      queryFn: async () => {
+        const response = await api.get<{ balance: Record<string, BalanceProducto> }>('/api/balance');
+        return response.balance;
+      },
     });
 
     // Prefetch productos con stock bajo
     queryClient.prefetchQuery({
       queryKey: [...queryKeys.products, 'lowStock'],
-      queryFn: () => {
-        const { productos } = useProductStore.getState();
+      queryFn: async () => {
+        const productos = await api.get<Producto[]>('/api/productos');
         return productos.filter((p) => p.stock <= p.stockMinimo);
       },
     });

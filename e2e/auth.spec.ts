@@ -29,8 +29,8 @@ test.describe('Autenticación', () => {
     await page.locator('input[id="password"]').fill('password_invalido');
     await page.getByRole('button', { name: /iniciar sesión/i }).click();
 
-    // Esperar mensaje de error
-    await expect(page.getByText(/inválid|error|incorrect/i)).toBeVisible({ timeout: 10000 });
+    // Esperar mensaje de error (puede ser credenciales inválidas o rate limit)
+    await expect(page.getByText(/inválid|error|incorrect|intentos|demasiados/i)).toBeVisible({ timeout: 10000 });
   });
 
   test('debe mostrar/ocultar contraseña con botón de toggle', async ({ page }) => {
@@ -138,10 +138,10 @@ test.describe('Validación del formulario', () => {
     // Click para enviar
     await submitButton.click();
 
-    // Después del envío, debe mostrar error (credenciales inválidas) o redirigir
+    // Después del envío, debe mostrar error (credenciales inválidas o rate limit) o redirigir
     // Esperamos ver un mensaje de error ya que las credenciales son de prueba
     await expect(
-      page.getByText(/inválid|error|incorrect|iniciando/i)
+      page.getByText(/inválid|error|incorrect|iniciando|intentos|demasiados/i)
     ).toBeVisible({ timeout: 10000 });
   });
 });
