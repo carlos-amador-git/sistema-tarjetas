@@ -1,211 +1,201 @@
-# CardSystem - Sistema de Inventario de Tarjetas
+# CardSystem
 
-Sistema white-label para gestión de inventario de tarjetas bancarias y productos relacionados. Diseñado para ser personalizable y desplegable para múltiples instituciones financieras.
+Sistema white-label para gestión de inventario de tarjetas bancarias. Diseñado para instituciones financieras que necesitan control de stock en múltiples ubicaciones con personalización completa de marca.
 
 ## Características
 
-- **Multi-Tenant**: Soporte para múltiples clientes desde una única instalación
-- **White-Label**: Completamente personalizable (logo, colores, textos)
-- **TypeScript**: Tipado estático para mejor mantenibilidad
-- **Tailwind CSS**: Estilos modernos y responsivos
-- **App Router**: Estructura moderna de Next.js
-- **Gestión de Inventario**: Control de stock en múltiples ubicaciones
-- **Pronóstico (Forecast)**: Proyecciones de demanda y alertas
-- **Órdenes de Compra**: Gestión del ciclo de adquisiciones
-- **Control por Roles**: Acceso diferenciado según área y permisos
-- **Exportación**: Soporte para Excel y PDF
-- **Autenticación**: Sistema completo con soporte para login facial
+- **White-Label**: Personalizable por cliente (logo, colores, textos)
+- **6 Paletas Bancarias**: Temas prediseñados para demos con clientes
+- **Multi-Ubicación**: Control de stock en Almacén, Logística y Sucursales
+- **Roles y Permisos**: Acceso diferenciado por área
+- **2FA**: Autenticación de dos factores con TOTP
+- **Forecast**: Proyecciones de demanda y alertas de stock
+- **Exportación**: Excel y PDF
+- **Tour Demo**: Recorrido guiado del sistema
 
 ## Stack Tecnológico
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Estilos**: Tailwind CSS 4
-- **Backend**: Python (FastAPI) con SQLite
-- **Autenticación**: JWT con soporte para Face ID
+| Capa | Tecnología |
+|------|------------|
+| Frontend | Next.js 16, React 19, TypeScript 5 |
+| Estilos | Tailwind CSS 4 |
+| Estado | Zustand 5, TanStack Query 5 |
+| ORM | Prisma 7 |
+| Base de Datos | SQLite |
+| Auth | JWT + bcrypt + speakeasy (2FA) |
+| Testing | Jest (654 tests), Playwright (108 E2E) |
+| Monitoreo | Sentry |
 
-## Requisitos
+## Inicio Rápido
 
-- Node.js 18+
-- npm o yarn
-- Python 3.9+ (para el backend)
-
-## Instalación
-
-### Frontend (Next.js)
+### Desarrollo Local
 
 ```bash
-cd sistema-tarjetas-nextjs
+# Clonar e instalar
+git clone https://github.com/MarxCha/sistema-tarjetas.git
+cd sistema-tarjetas
 npm install
+
+# Configurar base de datos
+npm run db:generate
+npm run db:push
+npm run db:seed
+
+# Iniciar
 npm run dev
 ```
 
-La aplicación estará disponible en `http://localhost:3000`
+Abrir http://localhost:3000
 
-### Backend (FastAPI)
+### Docker
 
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python run.py
+# Build y ejecutar
+docker-compose build app
+docker-compose up -d app
+
+# Verificar
+curl http://localhost:3000/api/health
 ```
 
-El API estará disponible en `http://localhost:8000`
+## Credenciales Demo
 
-## Estructura del Proyecto
+| Rol | Usuario | Contraseña |
+|-----|---------|------------|
+| Administrador | `admin` | `admin123` |
+| Almacén | `tsys_user` | `tsys123` |
+| Logística | `dist_user` | `dist123` |
+| Sucursales | `mod_user` | `mod123` |
+| Consulta | `director` | `dir123` |
 
-```
-sistema-tarjetas-nextjs/
-├── src/
-│   ├── app/                    # App Router (páginas)
-│   │   ├── (auth)/             # Grupo de rutas de autenticación
-│   │   │   └── login/
-│   │   ├── (dashboard)/        # Grupo de rutas del dashboard
-│   │   │   ├── dashboard/
-│   │   │   ├── balance/
-│   │   │   ├── forecast/
-│   │   │   ├── capturas/
-│   │   │   ├── ordenes/
-│   │   │   ├── productos/
-│   │   │   ├── usuarios/
-│   │   │   └── historial/
-│   │   └── globals.css
-│   ├── components/             # Componentes React
-│   ├── config/                 # Configuración
-│   │   ├── tenants/            # Configuraciones multi-tenant
-│   │   ├── branding.ts
-│   │   ├── modules.ts
-│   │   └── roles.ts
-│   ├── hooks/                  # Custom hooks
-│   ├── lib/                    # Utilidades y servicios
-│   └── types/                  # TypeScript types
-├── public/
-│   ├── images/
-│   └── tenants/                # Assets por cliente
-├── docs/                       # Documentación
-└── middleware.ts               # Middleware Next.js (multi-tenant)
-```
+## Paletas de Colores
 
-## Configuración
+El sistema incluye 6 temas bancarios para demos:
 
-### Variables de Entorno
+| Tema | Estilo | Uso |
+|------|--------|-----|
+| **CardSystem** | Azul corporativo | Default |
+| **Rojo Bancario** | Scotiabank/HSBC | Bancos tradicionales |
+| **Verde Bosque** | IXE Banco | Banca seria |
+| **Verde Fresco** | Falabella | Retail financiero |
+| **Púrpura Premium** | NuBank | Fintech |
+| **Naranja Dinámico** | ING/BanCoppel | Banca digital |
 
-Crea un archivo `.env.local` en la raíz del proyecto:
-
-```env
-# URL del backend Python
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
-```
-
-### Personalización de Marca
-
-Editar `src/config/branding.ts`:
-
-```typescript
-const BRANDING = {
-  companyName: 'Mi',
-  companySubtitle: 'Empresa',
-  systemName: 'Control de Tarjetas',
-  // ...
-};
-```
-
-### Multi-Tenant
-
-Ver [docs/MULTI_TENANT.md](docs/MULTI_TENANT.md) para configuración detallada de múltiples clientes.
+Cambiar tema desde el selector en el sidebar (modo demo).
 
 ## Módulos
 
 | Módulo | Ruta | Descripción |
 |--------|------|-------------|
-| Dashboard | `/dashboard` | Vista general y estadísticas |
-| Balance | `/balance` | Estado actual del inventario |
-| Forecast | `/forecast` | Proyecciones y alertas |
-| Captura Almacén | `/capturas/almacen` | Registro inventario central |
-| Captura Logística | `/capturas/logistica` | Registro en distribución |
-| Captura Sucursales | `/capturas/sucursales` | Registro en puntos de venta |
-| Órdenes | `/ordenes` | Gestión de compras |
-| Productos | `/productos` | Catálogo de productos |
-| Usuarios | `/usuarios` | Administración de usuarios |
-| Historial | `/historial` | Log de movimientos |
+| Dashboard | `/dashboard` | KPIs y resumen |
+| Balance | `/balance` | Inventario actual |
+| Forecast | `/forecast` | Proyecciones |
+| Captura Almacén | `/capturas/almacen` | Stock central |
+| Captura Logística | `/capturas/logistica` | En tránsito |
+| Captura Sucursales | `/capturas/sucursales` | Puntos de venta |
+| Órdenes | `/ordenes` | Compras |
+| Productos | `/productos` | Catálogo |
+| Usuarios | `/usuarios` | Administración |
+| Historial | `/historial` | Movimientos |
 
-## Roles de Usuario
+## Roles y Permisos
 
 | Rol | Área | Acceso |
 |-----|------|--------|
 | `admin` | Administración | Todos los módulos |
-| `almacen` / `tsys` | Almacén Central | Dashboard, Balance, Captura Almacén |
-| `logistica` / `distribucion` | Distribución | Dashboard, Balance, Captura Logística |
-| `sucursales` / `modulos` | Puntos de Venta | Dashboard, Balance, Captura Sucursales |
-| `consulta` | Dirección | Dashboard, Balance, Forecast, Historial |
+| `almacen` | Almacén Central | Dashboard, Balance, Captura Almacén |
+| `logistica` | Distribución | Dashboard, Balance, Captura Logística |
+| `sucursales` | Puntos de Venta | Dashboard, Balance, Captura Sucursales |
+| `consulta` | Dirección | Solo lectura (Dashboard, Balance, Forecast, Historial) |
 
-## Credenciales de Demo
+## Variables de Entorno
 
-| Usuario | Contraseña | Rol |
-|---------|------------|-----|
-| admin | admin123 | Administrador |
-| tsys_user | tsys123 | Almacén Central |
-| dist_user | dist123 | Logística |
-| mod_user | mod123 | Sucursales |
-| director | dir123 | Consulta |
+```env
+# Requeridas
+DATABASE_URL=file:./dev.db
+JWT_SECRET=<openssl rand -base64 32>
 
-## Scripts Disponibles
-
-```bash
-# Desarrollo
-npm run dev
-
-# Build de producción
-npm run build
-
-# Iniciar producción
-npm start
-
-# Linting
-npm run lint
+# Opcionales
+NODE_ENV=production
+NEXT_PUBLIC_DEMO_MODE=true
+NEXT_PUBLIC_SENTRY_DSN=<tu-dsn>
+ALLOW_HTTP_COOKIES=true  # Solo desarrollo
 ```
 
-## Despliegue
+## Estructura del Proyecto
 
-### Vercel (Recomendado)
-
-1. Conectar repositorio a Vercel
-2. Configurar variables de entorno
-3. Deploy automático
-
-### Docker
-
-```bash
-docker build -t cardsystem .
-docker run -p 3000:3000 cardsystem
 ```
+src/
+├── app/                    # App Router (páginas)
+│   ├── (auth)/login/       # Autenticación
+│   ├── (dashboard)/        # Módulos del sistema
+│   └── api/                # API Routes
+├── components/             # Componentes React
+├── config/
+│   ├── tenants/            # Configuración multi-tenant
+│   └── colorPalettes.ts    # Paletas de colores
+├── hooks/                  # Custom hooks
+├── lib/
+│   ├── auth/               # JWT, bcrypt, 2FA
+│   └── security/           # Rate limiting, CSRF
+├── stores/                 # Zustand stores
+└── types/                  # TypeScript types
 
-### Tradicional
-
-```bash
-npm run build
-npm start
+prisma/
+├── schema.prisma           # Modelos de datos
+└── seed.ts                 # Datos iniciales
 ```
 
 ## API Endpoints
 
-El backend expone los siguientes endpoints principales:
+### Autenticación
+- `POST /api/auth/login` - Iniciar sesión
+- `POST /api/auth/logout` - Cerrar sesión
+- `POST /api/auth/refresh` - Renovar token
+- `GET /api/auth/session` - Sesión actual
+- `POST /api/auth/2fa/*` - Operaciones 2FA
 
-- `POST /api/auth/login` - Autenticación
-- `GET /api/auth/me` - Usuario actual
-- `GET /api/inventario` - Inventario por producto
-- `POST /api/capturas` - Registrar captura
-- `GET /api/productos` - Catálogo de productos
-- `GET /api/ordenes` - Órdenes de compra
-- `GET /api/usuarios` - Lista de usuarios
+### Recursos
+- `GET/POST /api/productos` - Catálogo
+- `GET/PUT /api/balance` - Inventario
+- `GET/POST /api/historial` - Movimientos
+- `GET/POST/PUT/DELETE /api/ordenes` - Órdenes
 
-Ver documentación completa en `http://localhost:8000/docs`
+### Sistema
+- `GET /api/health` - Estado del sistema
+- `GET /api/metrics` - Métricas (admin)
+
+## Scripts
+
+```bash
+npm run dev          # Desarrollo
+npm run build        # Build producción
+npm run start        # Iniciar producción
+npm run test         # Tests unitarios
+npm run test:e2e     # Tests E2E
+npm run db:studio    # Prisma Studio
+```
+
+## Despliegue
+
+Ver [docs/DEPLOY.md](docs/DEPLOY.md) para instrucciones detalladas de:
+- Docker con docker-compose
+- Configuración de producción
+- Backup de base de datos
+
+## Tests
+
+```bash
+# Unitarios (654 tests)
+npm test
+
+# E2E (108 tests en 4 browsers)
+npm run test:e2e
+
+# Coverage
+npm run test:coverage
+```
 
 ## Licencia
 
-Propiedad privada - CardSystem. Todos los derechos reservados.
-
-## Soporte
-
-Para soporte técnico, contactar al equipo de desarrollo.
+Propiedad privada - Todos los derechos reservados.
