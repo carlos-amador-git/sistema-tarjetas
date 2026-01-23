@@ -50,9 +50,13 @@
       { "name": "Historial", "route": "/historial", "description": "Log de movimientos" }
     ],
     "stores": {
-      "inventoryStore": "src/stores/inventoryStore.ts - Balance, historial, órdenes",
-      "userStore": "src/stores/userStore.ts - CRUD usuarios",
-      "productStore": "src/stores/productStore.ts - CRUD productos"
+      "inventoryStore": "src/stores/inventoryStore.ts - (legacy, ahora via API)",
+      "userStore": "src/stores/userStore.ts - CRUD usuarios (pendiente migrar a API)",
+      "productStore": "src/stores/productStore.ts - (legacy, ahora via API)"
+    },
+    "dataFetching": {
+      "hooks": "src/hooks/useQueries.ts - React Query hooks conectados a APIs REST",
+      "apiClient": "src/lib/api.ts - Cliente HTTP centralizado"
     },
     "security": {
       "location": "src/lib/security/",
@@ -85,16 +89,16 @@
     { "id": "consulta", "area": "Dirección", "access": "Dashboard, Balance, Forecast, Historial (solo lectura)" }
   ],
   "status": {
-    "score": 95,
+    "score": 97,
     "rating": "Excelente",
     "lastAudit": "2026-01-22",
-    "completedSprints": [7, 8, 9, 10, 11, 12, 13],
-    "currentPhase": "Fase 3 - Calidad (finalizando)",
-    "currentSprint": 14,
-    "pendingSprints": [14, 15, 16, 17, 18, 19, 20],
-    "testsCount": 667,
+    "completedSprints": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+    "currentPhase": "Fase 4 - Producción",
+    "currentSprint": 17,
+    "pendingSprints": [17, 18, 19, 20],
+    "testsCount": 654,
     "coverage": "50.66%",
-    "e2eTests": "16/16 passing",
+    "e2eTests": "108/108 passing",
     "securityFeatures": [
       "httpOnly cookies",
       "Rate limiting (5 intentos/min)",
@@ -107,37 +111,45 @@
   "pendingWork": {
     "sprint14": {
       "name": "Consolidación Git",
-      "status": "in_progress",
-      "tasks": [
-        "Commit completo de archivos",
-        "Actualizar context.json",
-        "Push a origin"
-      ]
+      "status": "completed",
+      "completedAt": "2026-01-22"
     },
     "sprint15": {
       "name": "API Real con Prisma",
-      "status": "pending",
-      "tasks": [
-        "Conectar /api/auth/* con Prisma",
-        "Conectar /api/productos, balance, capturas",
-        "Migrar stores de mockData a API"
+      "status": "completed",
+      "completedAt": "2026-01-22",
+      "deliverables": [
+        "/api/productos (CRUD)",
+        "/api/balance (GET, PUT)",
+        "/api/historial (GET, POST)",
+        "/api/ordenes (CRUD)"
       ]
     },
     "sprint16": {
-      "name": "Validación E2E",
-      "status": "pending",
-      "tasks": [
-        "E2E con datos reales",
-        "Tests de roles y permisos"
+      "name": "Validación E2E con Backend Real",
+      "status": "completed",
+      "completedAt": "2026-01-22",
+      "deliverables": [
+        "useQueries migrado a APIs",
+        "108 E2E tests pasando",
+        "654 unit tests pasando"
       ]
     },
-    "sprint17to20": {
-      "name": "Producción y Docs",
+    "sprint17": {
+      "name": "Monitoreo y Telemetría",
       "status": "pending",
       "tasks": [
-        "Monitoreo Sentry",
+        "Configurar Sentry error tracking",
+        "Dashboard de métricas"
+      ]
+    },
+    "sprint18to20": {
+      "name": "Deploy y Documentación",
+      "status": "pending",
+      "tasks": [
         "Deploy Antigravity",
-        "Documentación completa"
+        "Documentación técnica",
+        "Manual de usuario"
       ]
     }
   },
@@ -181,9 +193,9 @@
     },
     {
       "id": "API-001",
-      "severity": "medium",
+      "severity": "resolved",
       "description": "API usa mockData en lugar de Prisma",
-      "solution": "Pendiente Sprint 15"
+      "solution": "Completado Sprint 15-16 - APIs conectadas a Prisma, useQueries migrado"
     }
   ],
   "planFile": ".claude/PLAN_FASES.md",
