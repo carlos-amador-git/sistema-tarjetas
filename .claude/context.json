@@ -61,6 +61,8 @@
   },
   "database": {
     "provider": "sqlite",
+    "mcpServer": "sqlite (global en ~/.claude.json)",
+    "connectionPath": "/Users/Marx/Projects/sistema-tarjetas/dev.db",
     "models": [
       "User",
       "AuditLog",
@@ -72,7 +74,8 @@
       "OrdenCompra",
       "ForecastProducto"
     ],
-    "location": "dev.db"
+    "location": "dev.db",
+    "note": "Este proyecto usa SQLite. Para proyectos PostgreSQL/PostGIS ver AgroRentable."
   },
   "roles": [
     { "id": "admin", "area": "Administración", "access": "Todos los módulos" },
@@ -82,13 +85,16 @@
     { "id": "consulta", "area": "Dirección", "access": "Dashboard, Balance, Forecast, Historial (solo lectura)" }
   ],
   "status": {
-    "score": 92,
+    "score": 95,
     "rating": "Excelente",
-    "lastAudit": "2026-01-21",
-    "completedSprints": [7, 8, 9, 10, 11],
-    "currentPhase": "Fase 3 - Calidad",
-    "pendingSprints": [12, 13],
-    "testsCount": 176,
+    "lastAudit": "2026-01-22",
+    "completedSprints": [7, 8, 9, 10, 11, 12, 13],
+    "currentPhase": "Fase 3 - Calidad (finalizando)",
+    "currentSprint": 14,
+    "pendingSprints": [14, 15, 16, 17, 18, 19, 20],
+    "testsCount": 667,
+    "coverage": "50.66%",
+    "e2eTests": "16/16 passing",
     "securityFeatures": [
       "httpOnly cookies",
       "Rate limiting (5 intentos/min)",
@@ -99,22 +105,39 @@
     ]
   },
   "pendingWork": {
-    "sprint12": {
-      "name": "Testing Completo",
+    "sprint14": {
+      "name": "Consolidación Git",
+      "status": "in_progress",
       "tasks": [
-        "Tests de componentes (70% coverage UI)",
-        "Tests de integración",
-        "E2E con Playwright",
-        "Coverage reporting"
+        "Commit completo de archivos",
+        "Actualizar context.json",
+        "Push a origin"
       ]
     },
-    "sprint13": {
-      "name": "Optimización y Polish",
+    "sprint15": {
+      "name": "API Real con Prisma",
+      "status": "pending",
       "tasks": [
-        "Implementar React Query para cache",
-        "Optimizar bundle size (< 200KB)",
-        "Lazy loading módulos",
-        "Documentación técnica"
+        "Conectar /api/auth/* con Prisma",
+        "Conectar /api/productos, balance, capturas",
+        "Migrar stores de mockData a API"
+      ]
+    },
+    "sprint16": {
+      "name": "Validación E2E",
+      "status": "pending",
+      "tasks": [
+        "E2E con datos reales",
+        "Tests de roles y permisos"
+      ]
+    },
+    "sprint17to20": {
+      "name": "Producción y Docs",
+      "status": "pending",
+      "tasks": [
+        "Monitoreo Sentry",
+        "Deploy Antigravity",
+        "Documentación completa"
       ]
     }
   },
@@ -152,11 +175,18 @@
     },
     {
       "id": "TEST-001",
-      "severity": "medium",
+      "severity": "resolved",
       "description": "Coverage E2E pendiente",
-      "solution": "Completar Sprint 12"
+      "solution": "Completado Sprint 12 - 16 tests E2E pasando"
+    },
+    {
+      "id": "API-001",
+      "severity": "medium",
+      "description": "API usa mockData en lugar de Prisma",
+      "solution": "Pendiente Sprint 15"
     }
   ],
-  "lastUpdated": "2026-01-22T13:25:00Z",
+  "planFile": ".claude/PLAN_FASES.md",
+  "lastUpdated": "2026-01-22T19:00:00Z",
   "location": "~/Projects/sistema-tarjetas"
 }

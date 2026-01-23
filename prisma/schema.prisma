@@ -1,0 +1,211 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ============================================================================
+// AUTENTICACIÓN Y SEGURIDAD
+// ============================================================================
+
+model User {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  email         String   @unique
+  password      String   // hashed con bcrypt
+  nombre        String
+  rol           String
+  area          String
+  activo        Boolean  @default(true)
+  
+  // 2FA
+  totpSecret    String?
+  totpEnabled   Boolean  @default(false)
+  backupCodes   String?  // JSON array
+  
+  // Timestamps
+  ultimoAcceso  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relaciones
+  movimientos   MovimientoHistorial[]
+  ordenes       OrdenCompra[]
+  capturas      Captura[]
+}
+
+model AuditLog {
+  id            Int      @id @default(autoincrement())
+  action        String
+  severity      String   // INFO, WARNING, ERROR
+  userId        String?
+  username      String?
+  ipAddress     String?
+  userAgent     String?
+  resource      String?
+  resourceId    String?
+  details       String?  // JSON
+  success       Boolean
+  errorMessage  String?
+  timestamp     DateTime @default(now())
+  
+  @@index([userId])
+  @@index([timestamp])
+}
+
+model RateLimit {
+  id            Int      @id @default(autoincrement())
+  identifier    String   @unique
+  attempts      Int      @default(0)
+  lastAttempt   DateTime @default(now())
+}
+
+// ============================================================================
+// PRODUCTOS
+// ============================================================================
+
+model Producto {
+  id            String   @id  // TC-001, WK-001, etc.
+  nombre        String
+  categoria     String   // tarjeta, kit, etiqueta, sobre, otro
+  areas         String   // JSON array: ['almacen', 'logistica', 'sucursales']
+  stock         Int      @default(0)
+  stockMinimo   Int
+  precio        Float
+  activo        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relaciones
+  balance       BalanceProducto?
+  movimientos   MovimientoHistorial[]
+  ordenes       OrdenCompra[]
+  
+  @@index([categoria])
+  @@index([activo])
+}
+
+// ============================================================================
+// INVENTARIO Y BALANCE
+// ============================================================================
+
+model BalanceProducto {
+  id                    Int      @id @default(autoincrement())
+  productoId            String   @unique
+  producto              Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  
+  // Almacén
+  almacenBovedaTrabajo      Int @default(0)
+  almacenBovedaPrincipal    Int @default(0)
+  
+  // En Proceso
+  enProcesoCantidad         Int @default(0)
+  enProcesoOrdenesActivas   Int @default(0)
+  
+  // Logística
+  logisticaColocacion      Int @default(0)
+  logisticaNormal          Int @default(0)
+  logisticaDevoluciones    Int @default(0)
+  
+  // Sucursales
+  sucursalesColocacion     Int @default(0)
+  sucursalesStock          Int @default(0)
+  
+  updatedAt     DateTime @updatedAt
+  
+  @@index([productoId])
+}
+
+model Captura {
+  id            Int      @id @default(autoincrement())
+  fecha         DateTime @default(now())
+  tipo          String   // ALMACEN, LOGISTICA, SUCURSAL
+  productoId    String
+  
+  // Usuario
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  
+  // Datos específicos por tipo (JSON)
+  datos         String   // JSON: bovedaTrabajo, bovedaPrincipal, colocacion, etc.
+  observacion   String?
+  
+  createdAt     DateTime @default(now())
+  
+  @@index([productoId])
+  @@index([userId])
+  @@index([fecha])
+}
+
+// ============================================================================
+// MOVIMIENTOS E HISTORIAL
+// ============================================================================
+
+model MovimientoHistorial {
+  id            Int      @id @default(autoincrement())
+  fecha         DateTime
+  tipo          String   // ENTRADA, SALIDA, AJUSTE
+  productoId    String
+  producto      Producto @relation(fields: [productoId], references: [id])
+  cantidad      Int
+  
+  // Usuario y área
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  area          String
+  
+  observacion   String
+  documento     String   // OC-2026-001, ENV-2026-045, etc.
+  
+  createdAt     DateTime @default(now())
+  
+  @@index([productoId])
+  @@index([userId])
+  @@index([fecha])
+  @@index([tipo])
+}
+
+// ============================================================================
+// ÓRDENES DE COMPRA
+// ============================================================================
+
+model OrdenCompra {
+  id            String   @id  // OC-2026-001
+  fecha         DateTime
+  productoId    String
+  producto      Producto @relation(fields: [productoId], references: [id])
+  cantidad      Int
+  
+  // Solicitante
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  area          String
+  
+  estatus       String   // PENDIENTE, APROBADA, COMPLETADA, RECHAZADA
+  costoTotal    Float
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([productoId])
+  @@index([userId])
+  @@index([estatus])
+  @@index([fecha])
+}
+
+// ============================================================================
+// PRONÓSTICO (FORECAST)
+// ============================================================================
+
+model ForecastProducto {
+  id            Int      @id @default(autoincrement())
+  productoId    String   @unique
+  forecast      String   // JSON array: [40000, 42000, 44000, ...]
+  tendencia     String   // up, down
+  alertas       Int      @default(0)
+  updatedAt     DateTime @updatedAt
+  
+  @@index([productoId])
+}

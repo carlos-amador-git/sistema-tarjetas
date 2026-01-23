@@ -1,0 +1,63 @@
+# ============================================
+# CardSystem - Docker Compose
+# Para desarrollo y testing local
+# ============================================
+
+services:
+  # Frontend Next.js
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000/api}
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000/api}
+      - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-false}
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend Python (si existe)
+  backend:
+    build:
+      context: ../Sistema\ Tarjetas\ Bancos/backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./cardsystem.db
+      - SECRET_KEY=${SECRET_KEY:-cambiar-en-produccion}
+      - CORS_ORIGINS=http://localhost:3000
+    volumes:
+      - backend_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  backend_data:
+
+# Para usar solo el frontend (sin backend local):
+# docker-compose up frontend
+#
+# Para usar todo:
+# docker-compose up
+#
+# Variables de entorno:
+# Crear archivo .env en la misma carpeta con:
+#   NEXT_PUBLIC_API_URL=https://api.tu-dominio.com
+#   NEXT_PUBLIC_DEMO_MODE=false
+#   SECRET_KEY=tu-clave-secreta

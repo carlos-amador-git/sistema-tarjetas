@@ -39,3 +39,26 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma generated
+/src/generated/prisma
+
+# database (local development)
+dev.db
+dev.db-journal
+*.db-wal
+*.db-shm
+
+# test artifacts
+/playwright-report/
+/test-results/
+/coverage/
+
+# editor temp files
+~$*
+*.swp
+*.swo
+
+# Word/Office temp files
+~$*.docx
+~$*.xlsx
