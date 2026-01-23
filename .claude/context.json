@@ -9,16 +9,16 @@
   },
 
   "status": {
-    "score": 99,
-    "rating": "Excelente",
-    "lastSession": "2026-01-23T13:00:00Z",
-    "workingOn": "Sprint 20 - Documentación Final",
+    "score": 100,
+    "rating": "Completado",
+    "lastSession": "2026-01-23T14:00:00Z",
+    "workingOn": "Mantenimiento",
     "blockedOn": null,
-    "progress": "99% completado",
+    "progress": "100% completado",
     "currentPhase": "Fase 5 - Producción",
-    "currentSprint": 20,
-    "pendingSprints": [20],
-    "completedSprints": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    "currentSprint": null,
+    "pendingSprints": [],
+    "completedSprints": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
   },
 
   "stack": {
@@ -203,12 +203,13 @@
     },
     "sprint20": {
       "name": "Documentación Final",
-      "status": "in_progress",
+      "status": "completed",
+      "completedAt": "2026-01-23",
       "tasks": [
         { "task": "Sistema de paletas bancarias", "status": "completed" },
-        { "task": "README completo", "status": "pending" },
-        { "task": "Documentación API (OpenAPI)", "status": "pending" },
-        { "task": "Manual de usuario", "status": "pending" }
+        { "task": "README completo", "status": "completed" },
+        { "task": "Documentación API", "status": "completed" },
+        { "task": "Manual de usuario", "status": "completed" }
       ]
     }
   },
