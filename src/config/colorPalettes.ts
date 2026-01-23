@@ -1010,59 +1010,77 @@ export interface DemoPalette {
 }
 
 export const DEMO_PALETTES: DemoPalette[] = [
+  // -------------------------------------------------------------------------
+  // CardSystem (Default) - Azul corporativo confiable
+  // -------------------------------------------------------------------------
   {
     id: 'default',
     name: 'CardSystem',
-    primary: '#3b82f6',    // blue-500
-    secondary: '#1e40af',  // blue-800
-    accent: '#60a5fa',     // blue-400
-    sidebar: '#1e293b',    // slate-800
-    background: '#f8fafc', // slate-50
+    primary: '#3b82f6',    // blue-500 - botones, links, iconos
+    secondary: '#1e40af',  // blue-800 - hover states, acentos fuertes
+    accent: '#60a5fa',     // blue-400 - highlights, badges
+    sidebar: '#1e293b',    // slate-800 - fondo sidebar
+    background: '#f8fafc', // slate-50 - fondo general
   },
+  // -------------------------------------------------------------------------
+  // Rojo Bancario - Estilo Scotiabank/HSBC/Santander
+  // -------------------------------------------------------------------------
   {
-    id: 'emerald',
-    name: 'Esmeralda',
-    primary: '#059669',    // emerald-600
-    secondary: '#047857',  // emerald-700
-    accent: '#34d399',     // emerald-400
-    sidebar: '#064e3b',    // emerald-900
-    background: '#f0fdf4', // emerald-50
+    id: 'rojo-bancario',
+    name: 'Rojo Bancario',
+    primary: '#dc2626',    // red-600 - rojo institucional
+    secondary: '#991b1b',  // red-800 - rojo oscuro para contraste
+    accent: '#fca5a5',     // red-300 - rojo suave para highlights
+    sidebar: '#1c1917',    // stone-900 - sidebar elegante oscuro
+    background: '#fafafa', // neutral-50 - fondo limpio
   },
+  // -------------------------------------------------------------------------
+  // Verde Bosque - Estilo IXE Banco / Banorte antiguo
+  // -------------------------------------------------------------------------
   {
-    id: 'rose',
-    name: 'Rosa Corporativo',
-    primary: '#e11d48',    // rose-600
-    secondary: '#be123c',  // rose-700
-    accent: '#fb7185',     // rose-400
-    sidebar: '#881337',    // rose-900
-    background: '#fff1f2', // rose-50
+    id: 'verde-bosque',
+    name: 'Verde Bosque',
+    primary: '#166534',    // green-800 - verde institucional profundo
+    secondary: '#14532d',  // green-900 - verde muy oscuro
+    accent: '#86efac',     // green-300 - verde claro para acentos
+    sidebar: '#052e16',    // green-950 - sidebar verde muy oscuro
+    background: '#f0fdf4', // green-50 - fondo con tinte verde sutil
   },
+  // -------------------------------------------------------------------------
+  // Verde Fresco - Estilo Falabella / Starbucks
+  // -------------------------------------------------------------------------
   {
-    id: 'violet',
-    name: 'Violeta',
-    primary: '#7c3aed',    // violet-600
-    secondary: '#6d28d9',  // violet-700
-    accent: '#a78bfa',     // violet-400
-    sidebar: '#4c1d95',    // violet-900
-    background: '#f5f3ff', // violet-50
+    id: 'verde-fresco',
+    name: 'Verde Fresco',
+    primary: '#16a34a',    // green-600 - verde vibrante
+    secondary: '#15803d',  // green-700 - verde medio
+    accent: '#4ade80',     // green-400 - verde brillante
+    sidebar: '#14532d',    // green-900 - sidebar verde oscuro
+    background: '#f7fef9', // verde muy pálido personalizado
   },
+  // -------------------------------------------------------------------------
+  // Púrpura Premium - Estilo NuBank / Fintech moderno
+  // -------------------------------------------------------------------------
   {
-    id: 'amber',
-    name: 'Ámbar',
-    primary: '#d97706',    // amber-600
-    secondary: '#b45309',  // amber-700
-    accent: '#fbbf24',     // amber-400
-    sidebar: '#78350f',    // amber-900
-    background: '#fffbeb', // amber-50
+    id: 'purpura-premium',
+    name: 'Púrpura Premium',
+    primary: '#7c3aed',    // violet-600 - púrpura distintivo
+    secondary: '#5b21b6',  // violet-800 - púrpura profundo
+    accent: '#c4b5fd',     // violet-300 - lavanda suave
+    sidebar: '#2e1065',    // violet-950 - sidebar púrpura oscuro
+    background: '#faf5ff', // violet-50 - fondo con tinte púrpura
   },
+  // -------------------------------------------------------------------------
+  // Naranja Dinámico - Estilo ING / BanCoppel
+  // -------------------------------------------------------------------------
   {
-    id: 'slate',
-    name: 'Gris Ejecutivo',
-    primary: '#475569',    // slate-600
-    secondary: '#334155',  // slate-700
-    accent: '#94a3b8',     // slate-400
-    sidebar: '#0f172a',    // slate-900
-    background: '#f8fafc', // slate-50
+    id: 'naranja-dinamico',
+    name: 'Naranja Dinámico',
+    primary: '#ea580c',    // orange-600 - naranja energético
+    secondary: '#c2410c',  // orange-700 - naranja intenso
+    accent: '#fdba74',     // orange-300 - durazno suave
+    sidebar: '#431407',    // orange-950 - sidebar café oscuro
+    background: '#fff7ed', // orange-50 - fondo cálido
   },
 ];
 
@@ -1075,18 +1093,32 @@ export function getDemoPaletteById(id: string): DemoPalette | undefined {
 
 /**
  * Aplica una paleta demo como CSS variables
+ * Actualiza TODAS las variables necesarias para cambio completo de tema
  */
 export function applyDemoPalette(palette: DemoPalette) {
   const root = document.documentElement;
+
+  // Variables principales de color
   root.style.setProperty('--color-primary', palette.primary);
   root.style.setProperty('--color-secondary', palette.secondary);
   root.style.setProperty('--color-accent', palette.accent);
+  root.style.setProperty('--color-sidebar', palette.sidebar);
   root.style.setProperty('--color-sidebar-bg', palette.sidebar);
   root.style.setProperty('--color-background', palette.background);
-  // Also update brand variables for compatibility
+
+  // Variables de marca (para componentes que usan --brand-*)
   root.style.setProperty('--brand-primary', palette.primary);
   root.style.setProperty('--brand-secondary', palette.secondary);
   root.style.setProperty('--brand-accent', palette.accent);
+  root.style.setProperty('--brand-gradient', `linear-gradient(135deg, ${palette.primary}, ${palette.secondary})`);
+  root.style.setProperty('--brand-shadow', `${palette.primary}4D`); // 30% opacity
+
+  // Variables de sidebar
+  root.style.setProperty('--sidebar-background', palette.sidebar);
+  root.style.setProperty('--sidebar-active', palette.primary);
+
+  // Variable de fondo general
+  root.style.setProperty('--neutral-background', palette.background);
 }
 
 export default COLOR_PALETTES;

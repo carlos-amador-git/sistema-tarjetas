@@ -17,7 +17,7 @@ export function DemoTourButton() {
   if (!features.showDemo) return null;
 
   const handleNavigate = (route: string) => {
-    setIsOpen(false);
+    // No cerramos el tour, solo navegamos
     router.push(route);
   };
 
@@ -39,12 +39,14 @@ export function DemoTourButton() {
             onClick={() => setIsOpen(true)}
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
+            style={{
+              background: `linear-gradient(135deg, var(--brand-primary, #3b82f6), var(--brand-secondary, #1e40af))`,
+            }}
             className={cn(
               "flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all",
-              "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
               "text-white font-medium",
-              "hover:scale-105 hover:shadow-xl",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              "hover:scale-105 hover:shadow-xl hover:brightness-110",
+              "focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#3b82f6)] focus:ring-offset-2"
             )}
           >
             <Play className="h-5 w-5" />
@@ -54,8 +56,8 @@ export function DemoTourButton() {
           {/* Pulse animation */}
           <span className="absolute top-0 right-0 -mt-1 -mr-1">
             <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--brand-accent,#60a5fa)] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--brand-primary,#3b82f6)]"></span>
             </span>
           </span>
         </div>

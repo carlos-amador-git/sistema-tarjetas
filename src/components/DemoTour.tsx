@@ -218,6 +218,13 @@ export function DemoTour({ isOpen, onClose, onNavigate }: DemoTourProps) {
   const step = TOUR_STEPS[currentStep];
   const Icon = step.icon;
 
+  // Navegar automáticamente cuando cambia el paso
+  useEffect(() => {
+    if (isOpen && step.route && onNavigate) {
+      onNavigate(step.route);
+    }
+  }, [currentStep, isOpen, step.route, onNavigate]);
+
   const goToStep = useCallback((index: number) => {
     if (index < 0 || index >= TOUR_STEPS.length || isAnimating) return;
     setIsAnimating(true);
@@ -262,50 +269,51 @@ export function DemoTour({ isOpen, onClose, onNavigate }: DemoTourProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-y-0 right-0 z-50 flex items-center p-4">
       <div
         className={cn(
-          "bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden transition-opacity duration-150",
+          "bg-white rounded-2xl shadow-2xl w-96 max-h-[90vh] overflow-hidden transition-opacity duration-150",
+          "border border-slate-200",
           isAnimating ? "opacity-50" : "opacity-100"
         )}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white">
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 rounded-xl">
-                <Icon className="h-8 w-8" />
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Icon className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-blue-200 text-sm">
+                <p className="text-blue-200 text-xs">
                   Paso {currentStep + 1} de {TOUR_STEPS.length}
                 </p>
-                <h2 className="text-2xl font-bold">{step.title}</h2>
+                <h2 className="text-lg font-bold">{step.title}</h2>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          <p className="text-slate-600 text-lg mb-6">{step.description}</p>
+        <div className="p-4 overflow-y-auto max-h-[60vh]">
+          <p className="text-slate-600 text-sm mb-4">{step.description}</p>
 
           {/* Highlights */}
-          <div className="space-y-3 mb-6">
-            <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-              Características principales
+          <div className="space-y-2">
+            <h3 className="font-semibold text-slate-800 text-sm flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[var(--brand-primary,#3b82f6)] rounded-full"></span>
+              Características
             </h3>
-            <ul className="space-y-2 pl-4">
+            <ul className="space-y-1.5">
               {step.highlights.map((highlight, index) => (
-                <li key={index} className="flex items-start gap-3 text-slate-600">
-                  <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">
+                <li key={index} className="flex items-start gap-2 text-slate-600 text-sm">
+                  <span className="w-4 h-4 bg-[var(--brand-primary,#3b82f6)]/20 text-[var(--brand-primary,#3b82f6)] rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">
                     {index + 1}
                   </span>
                   {highlight}
@@ -314,26 +322,16 @@ export function DemoTour({ isOpen, onClose, onNavigate }: DemoTourProps) {
             </ul>
           </div>
 
-          {/* Navigate to module button */}
-          {step.route && onNavigate && (
-            <button
-              onClick={handleNavigate}
-              className="w-full py-3 bg-blue-50 text-blue-600 rounded-xl font-medium hover:bg-blue-100 transition-colors mb-4"
-            >
-              Ver módulo: {step.title}
-            </button>
-          )}
-
           {/* Progress dots */}
-          <div className="flex justify-center gap-1.5 mb-6">
+          <div className="flex justify-center gap-1 mt-4">
             {TOUR_STEPS.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToStep(index)}
                 className={cn(
-                  "w-2 h-2 rounded-full transition-all",
+                  "w-1.5 h-1.5 rounded-full transition-all",
                   index === currentStep
-                    ? "w-6 bg-blue-500"
+                    ? "w-4 bg-[var(--brand-primary,#3b82f6)]"
                     : "bg-slate-300 hover:bg-slate-400"
                 )}
               />
@@ -342,31 +340,27 @@ export function DemoTour({ isOpen, onClose, onNavigate }: DemoTourProps) {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-200 p-4 flex items-center justify-between bg-slate-50">
+        <div className="border-t border-slate-200 p-3 flex items-center justify-between bg-slate-50">
           <button
             onClick={goPrev}
             disabled={currentStep === 0}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors",
+              "flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
               currentStep === 0
                 ? "text-slate-300 cursor-not-allowed"
                 : "text-slate-600 hover:bg-slate-200"
             )}
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
             Anterior
           </button>
 
-          <span className="text-sm text-slate-500">
-            Use las flechas ← → para navegar
-          </span>
-
           <button
             onClick={goNext}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 transition-colors"
+            className="flex items-center gap-1 px-4 py-1.5 bg-[var(--brand-primary,#3b82f6)] text-white rounded-lg text-sm font-medium hover:bg-[var(--brand-secondary,#1e40af)] transition-colors"
           >
             {currentStep === TOUR_STEPS.length - 1 ? 'Finalizar' : 'Siguiente'}
-            {currentStep < TOUR_STEPS.length - 1 && <ChevronRight className="h-5 w-5" />}
+            {currentStep < TOUR_STEPS.length - 1 && <ChevronRight className="h-4 w-4" />}
           </button>
         </div>
       </div>

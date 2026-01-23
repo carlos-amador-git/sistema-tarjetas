@@ -250,7 +250,7 @@ export function NuevaOrdenForm({ onSuccess, onCancel }: NuevaOrdenFormProps) {
           disabled={isSubmitting}
           className={cn(
             'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-white',
-            'bg-blue-500 hover:bg-blue-600',
+            'bg-[var(--brand-primary,#3b82f6)] hover:bg-[var(--brand-secondary,#1e40af)]',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             'transition-colors'
           )}

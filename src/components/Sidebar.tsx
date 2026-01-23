@@ -76,7 +76,7 @@ export default function Sidebar({ className }: SidebarProps) {
           !active && 'text-slate-300 hover:text-white'
         )}
       >
-        <Icon className={cn('h-5 w-5 flex-shrink-0', active && 'text-blue-400')} />
+        <Icon className={cn('h-5 w-5 flex-shrink-0', active && 'text-[var(--brand-accent)]')} />
         {!isCollapsed && <span className="font-medium truncate">{module.label}</span>}
       </Link>
     );
@@ -203,9 +203,9 @@ export default function Sidebar({ className }: SidebarProps) {
 
       {/* Sidebar */}
       <aside
+        style={{ backgroundColor: 'var(--color-sidebar)' }}
         className={cn(
           'fixed lg:static inset-y-0 left-0 z-50',
-          'bg-gradient-to-b from-slate-900 to-slate-800',
           'flex flex-col transition-all duration-300',
           'border-r border-white/10',
           // Desktop

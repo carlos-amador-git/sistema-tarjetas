@@ -281,8 +281,8 @@ export function NuevoUsuarioForm({ onSuccess, onCancel }: NuevoUsuarioFormProps)
           type="submit"
           disabled={isSubmitting}
           className={cn(
-            'px-6 py-2 bg-blue-500 text-white rounded-xl font-medium',
-            'hover:bg-blue-600 transition-colors',
+            'px-6 py-2 bg-[var(--brand-primary,#3b82f6)] text-white rounded-xl font-medium',
+            'hover:bg-[var(--brand-secondary,#1e40af)] transition-colors',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >

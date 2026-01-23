@@ -190,7 +190,7 @@ export function TwoFactorSetup({ isOpen, onClose, onStatusChange }: TwoFactorSet
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
-              <Shield className="h-5 w-5 text-blue-600" />
+              <Shield className="h-5 w-5 text-[var(--brand-primary,#3b82f6)]" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-slate-900">
@@ -261,7 +261,7 @@ export function TwoFactorSetup({ isOpen, onClose, onStatusChange }: TwoFactorSet
               ) : (
                 <button
                   onClick={handleStartSetup}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[var(--brand-primary,#3b82f6)] text-white hover:bg-[var(--brand-secondary,#1e40af)] transition-colors"
                 >
                   <ShieldCheck className="h-4 w-4" />
                   Activar 2FA
@@ -272,7 +272,7 @@ export function TwoFactorSetup({ isOpen, onClose, onStatusChange }: TwoFactorSet
             /* Configuración: QR Code */
             <div className="space-y-6">
               <div className="text-center">
-                <QrCode className="h-8 w-8 mx-auto text-blue-600 mb-2" />
+                <QrCode className="h-8 w-8 mx-auto text-[var(--brand-primary,#3b82f6)] mb-2" />
                 <h3 className="font-medium text-slate-900">Escanee el código QR</h3>
                 <p className="text-sm text-slate-500 mt-1">
                   Use Google Authenticator, Authy u otra app compatible
@@ -316,7 +316,7 @@ export function TwoFactorSetup({ isOpen, onClose, onStatusChange }: TwoFactorSet
 
               <button
                 onClick={() => setStep('verify')}
-                className="w-full py-3 px-4 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                className="w-full py-3 px-4 rounded-xl bg-[var(--brand-primary,#3b82f6)] text-white hover:bg-[var(--brand-secondary,#1e40af)] transition-colors"
               >
                 Continuar
               </button>
@@ -325,7 +325,7 @@ export function TwoFactorSetup({ isOpen, onClose, onStatusChange }: TwoFactorSet
             /* Verificación del código */
             <div className="space-y-6">
               <div className="text-center">
-                <Key className="h-8 w-8 mx-auto text-blue-600 mb-2" />
+                <Key className="h-8 w-8 mx-auto text-[var(--brand-primary,#3b82f6)] mb-2" />
                 <h3 className="font-medium text-slate-900">Verifique la configuración</h3>
                 <p className="text-sm text-slate-500 mt-1">
                   Ingrese el código de 6 dígitos de su app
@@ -343,7 +343,7 @@ export function TwoFactorSetup({ isOpen, onClose, onStatusChange }: TwoFactorSet
                   setError('');
                 }}
                 placeholder="000000"
-                className="w-full text-center text-2xl font-mono tracking-widest py-4 px-4 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full text-center text-2xl font-mono tracking-widest py-4 px-4 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#3b82f6)] focus:border-transparent"
               />
 
               {error && (
@@ -363,7 +363,7 @@ export function TwoFactorSetup({ isOpen, onClose, onStatusChange }: TwoFactorSet
                 <button
                   onClick={handleVerifyAndEnable}
                   disabled={verifyCode.length !== 6 || isLoading}
-                  className="flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 px-4 rounded-xl bg-[var(--brand-primary,#3b82f6)] text-white hover:bg-[var(--brand-secondary,#1e40af)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin mx-auto" />
@@ -426,7 +426,7 @@ export function TwoFactorSetup({ isOpen, onClose, onStatusChange }: TwoFactorSet
 
               <button
                 onClick={handleClose}
-                className="w-full py-3 px-4 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                className="w-full py-3 px-4 rounded-xl bg-[var(--brand-primary,#3b82f6)] text-white hover:bg-[var(--brand-secondary,#1e40af)] transition-colors"
               >
                 Entendido
               </button>

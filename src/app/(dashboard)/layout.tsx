@@ -23,8 +23,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-100">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-background,#f8fafc)]">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-primary,#3b82f6)]" />
       </div>
     );
   }
@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="h-screen w-full overflow-hidden flex bg-slate-100">
+    <div className="h-screen w-full overflow-hidden flex bg-[var(--color-background,#f8fafc)]">
       <Sidebar />
       <main className="flex-1 overflow-y-auto h-full relative">
         <div className="p-6 lg:p-8">{children}</div>
