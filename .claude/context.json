@@ -4,17 +4,17 @@
     "fullName": "Sistema de Inventario de Tarjetas Bancarias",
     "version": "0.1.0",
     "description": "Sistema white-label para gestión de inventario de tarjetas bancarias con forecasting, multi-tenant y control por roles",
-    "repository": null,
+    "repository": "https://github.com/MarxCha/sistema-tarjetas",
     "license": "Proprietary"
   },
 
   "status": {
-    "score": 98,
+    "score": 99,
     "rating": "Excelente",
-    "lastSession": "2026-01-23T06:30:00Z",
+    "lastSession": "2026-01-23T13:00:00Z",
     "workingOn": "Sprint 20 - Documentación Final",
     "blockedOn": null,
-    "progress": "98% completado",
+    "progress": "99% completado",
     "currentPhase": "Fase 5 - Producción",
     "currentSprint": 20,
     "pendingSprints": [20],
@@ -103,6 +103,13 @@
       "description": "ThemeSelector menu quedaba detrás del sidebar (z-index)",
       "solution": "Usar createPortal para renderizar el menu en document.body con z-index:9999",
       "learned": "2026-01-23"
+    },
+    {
+      "id": "PALETTE-001",
+      "severity": "resolved",
+      "description": "Paleta de colores solo aplicaba a algunos componentes",
+      "solution": "Actualizar todos los componentes para usar CSS variables (--brand-primary, --brand-secondary, etc.) en lugar de colores Tailwind hardcodeados",
+      "learned": "2026-01-23"
     }
   ],
 
@@ -141,12 +148,42 @@
   },
 
   "demoPalettes": [
-    "CardSystem (azul)",
-    "Esmeralda (verde)",
-    "Rosa Corporativo (rosa)",
-    "Violeta (morado)",
-    "Ámbar (naranja)",
-    "Gris Ejecutivo (gris)"
+    {
+      "id": "default",
+      "name": "CardSystem",
+      "style": "Azul corporativo confiable",
+      "primary": "#3b82f6"
+    },
+    {
+      "id": "rojo-bancario",
+      "name": "Rojo Bancario",
+      "style": "Scotiabank/HSBC/Santander",
+      "primary": "#dc2626"
+    },
+    {
+      "id": "verde-bosque",
+      "name": "Verde Bosque",
+      "style": "IXE Banco",
+      "primary": "#166534"
+    },
+    {
+      "id": "verde-fresco",
+      "name": "Verde Fresco",
+      "style": "Falabella/Starbucks",
+      "primary": "#16a34a"
+    },
+    {
+      "id": "purpura-premium",
+      "name": "Púrpura Premium",
+      "style": "NuBank/Fintech",
+      "primary": "#7c3aed"
+    },
+    {
+      "id": "naranja-dinamico",
+      "name": "Naranja Dinámico",
+      "style": "ING/BanCoppel",
+      "primary": "#ea580c"
+    }
   ],
 
   "roles": [
@@ -155,7 +192,7 @@
     { "id": "logistica", "alias": "distribucion", "area": "Distribución", "access": "Dashboard, Balance, Captura Logística" },
     { "id": "sucursales", "alias": "modulos", "area": "Puntos de Venta", "access": "Dashboard, Balance, Captura Sucursales" },
     { "id": "consulta", "area": "Dirección", "access": "Dashboard, Balance, Forecast, Historial (solo lectura)" }
-  ],
+  },
 
   "pendingWork": {
     "sprint19": {
@@ -166,28 +203,34 @@
     },
     "sprint20": {
       "name": "Documentación Final",
-      "status": "pending",
+      "status": "in_progress",
       "tasks": [
-        "README completo",
-        "Documentación API (OpenAPI)",
-        "Manual de usuario"
+        { "task": "Sistema de paletas bancarias", "status": "completed" },
+        { "task": "README completo", "status": "pending" },
+        { "task": "Documentación API (OpenAPI)", "status": "pending" },
+        { "task": "Manual de usuario", "status": "pending" }
       ]
     }
   },
 
   "recentChanges": {
     "date": "2026-01-23",
+    "commits": [
+      "ffd6bb6 feat(deploy): Docker production-ready con demo mode",
+      "53d63ea feat(theme): sistema de paletas bancarias white-label"
+    ],
     "files": [
-      "src/app/api/auth/session/route.ts - JWT verification local",
-      "src/app/api/auth/login/route.ts - ALLOW_HTTP_COOKIES support",
-      "src/app/api/auth/refresh/route.ts - ALLOW_HTTP_COOKIES support",
-      "src/app/api/auth/2fa/verify/route.ts - ALLOW_HTTP_COOKIES support",
-      "src/components/DemoTour.tsx - Navegación automática, panel lateral",
-      "src/components/DemoTourButton.tsx - No cierra tour al navegar",
-      "src/components/ThemeSelector.tsx - createPortal para z-index, menú hacia abajo",
-      "src/config/tenants/default.ts - Demo credentials hardcoded cuando DEMO_MODE=true",
+      "src/config/colorPalettes.ts - 6 paletas bancarias (CardSystem, Rojo, Verde Bosque, Verde Fresco, Púrpura, Naranja)",
+      "src/components/Sidebar.tsx - CSS variables para fondo e iconos",
+      "src/components/DemoTour.tsx - CSS variables para highlights y botones",
+      "src/components/DemoTourButton.tsx - CSS variables para gradiente",
+      "src/components/ThemeSelector.tsx - createPortal + menú mejorado",
+      "src/components/TwoFactorSetup.tsx - CSS variables para botones",
+      "src/components/forms/*.tsx - CSS variables para botones primarios",
+      "src/app/(dashboard)/layout.tsx - CSS variables para fondo y loader",
+      "Dockerfile - Template DB approach",
       "docker-compose.yml - ALLOW_HTTP_COOKIES=true",
-      "Dockerfile - Template DB approach"
+      "docs/DEPLOY.md - Documentación de deploy"
     ]
   },
 
@@ -224,6 +267,6 @@
     "2FA support (TOTP)"
   ],
 
-  "lastUpdated": "2026-01-23T06:30:00Z",
+  "lastUpdated": "2026-01-23T13:00:00Z",
   "location": "~/Projects/sistema-tarjetas"
 }
