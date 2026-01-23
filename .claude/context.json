@@ -92,10 +92,10 @@
     "score": 97,
     "rating": "Excelente",
     "lastAudit": "2026-01-22",
-    "completedSprints": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-    "currentPhase": "Fase 4 - Producción",
-    "currentSprint": 17,
-    "pendingSprints": [17, 18, 19, 20],
+    "completedSprints": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+    "currentPhase": "Fase 5 - Producción",
+    "currentSprint": 18,
+    "pendingSprints": [18, 19, 20],
     "testsCount": 654,
     "coverage": "50.66%",
     "e2eTests": "108/108 passing",
@@ -137,10 +137,13 @@
     },
     "sprint17": {
       "name": "Monitoreo y Telemetría",
-      "status": "pending",
-      "tasks": [
-        "Configurar Sentry error tracking",
-        "Dashboard de métricas"
+      "status": "completed",
+      "completedAt": "2026-01-22",
+      "deliverables": [
+        "/api/health endpoint",
+        "/api/metrics endpoint",
+        "lib/monitoring.ts utilities",
+        "Dockerfile HEALTHCHECK"
       ]
     },
     "sprint18to20": {
