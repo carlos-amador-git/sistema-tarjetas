@@ -1,63 +1,98 @@
 # ============================================
 # CardSystem - Docker Compose
-# Para desarrollo y testing local
+# Next.js + Prisma + SQLite
 # ============================================
 
 services:
-  # Frontend Next.js
-  frontend:
+  # Aplicación principal (Next.js con API integrada)
+  app:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000/api}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-}
+        - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
+        - NEXT_PUBLIC_APP_VERSION=${NEXT_PUBLIC_APP_VERSION:-0.1.0}
+        - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-false}
+        - NEXT_PUBLIC_DEMO_ADMIN_USER=${NEXT_PUBLIC_DEMO_ADMIN_USER:-}
+        - NEXT_PUBLIC_DEMO_ADMIN_PASS=${NEXT_PUBLIC_DEMO_ADMIN_PASS:-}
+        - NEXT_PUBLIC_DEMO_ADMIN_LABEL=${NEXT_PUBLIC_DEMO_ADMIN_LABEL:-}
+        - NEXT_PUBLIC_DEMO_ALMACEN_USER=${NEXT_PUBLIC_DEMO_ALMACEN_USER:-}
+        - NEXT_PUBLIC_DEMO_ALMACEN_PASS=${NEXT_PUBLIC_DEMO_ALMACEN_PASS:-}
+        - NEXT_PUBLIC_DEMO_ALMACEN_LABEL=${NEXT_PUBLIC_DEMO_ALMACEN_LABEL:-}
+        - NEXT_PUBLIC_DEMO_LOGISTICA_USER=${NEXT_PUBLIC_DEMO_LOGISTICA_USER:-}
+        - NEXT_PUBLIC_DEMO_LOGISTICA_PASS=${NEXT_PUBLIC_DEMO_LOGISTICA_PASS:-}
+        - NEXT_PUBLIC_DEMO_LOGISTICA_LABEL=${NEXT_PUBLIC_DEMO_LOGISTICA_LABEL:-}
+        - NEXT_PUBLIC_DEMO_SUCURSALES_USER=${NEXT_PUBLIC_DEMO_SUCURSALES_USER:-}
+        - NEXT_PUBLIC_DEMO_SUCURSALES_PASS=${NEXT_PUBLIC_DEMO_SUCURSALES_PASS:-}
+        - NEXT_PUBLIC_DEMO_SUCURSALES_LABEL=${NEXT_PUBLIC_DEMO_SUCURSALES_LABEL:-}
+        - NEXT_PUBLIC_DEMO_CONSULTA_USER=${NEXT_PUBLIC_DEMO_CONSULTA_USER:-}
+        - NEXT_PUBLIC_DEMO_CONSULTA_PASS=${NEXT_PUBLIC_DEMO_CONSULTA_PASS:-}
+        - NEXT_PUBLIC_DEMO_CONSULTA_LABEL=${NEXT_PUBLIC_DEMO_CONSULTA_LABEL:-}
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/production.db
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-false}
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - ALLOW_HTTP_COOKIES=true
+    volumes:
+      # Persistir base de datos SQLite
+      - app_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Servicio para desarrollo (opcional)
+  dev:
+    profiles:
+      - dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000/api}
-      - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-false}
-    depends_on:
-      - backend
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Backend Python (si existe)
-  backend:
-    build:
-      context: ../Sistema\ Tarjetas\ Bancos/backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=sqlite:///./cardsystem.db
-      - SECRET_KEY=${SECRET_KEY:-cambiar-en-produccion}
-      - CORS_ORIGINS=http://localhost:3000
+      - NODE_ENV=development
+      - DATABASE_URL=file:./dev.db
+      - JWT_SECRET=dev-secret-not-for-production
+      - NEXT_PUBLIC_DEMO_MODE=true
     volumes:
-      - backend_data:/app/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
 
 volumes:
-  backend_data:
+  app_data:
+    driver: local
 
-# Para usar solo el frontend (sin backend local):
-# docker-compose up frontend
+# ============================================
+# USO:
+# ============================================
 #
-# Para usar todo:
-# docker-compose up
+# Producción:
+#   export JWT_SECRET="tu-secreto-seguro"
+#   docker-compose up -d app
 #
-# Variables de entorno:
-# Crear archivo .env en la misma carpeta con:
-#   NEXT_PUBLIC_API_URL=https://api.tu-dominio.com
-#   NEXT_PUBLIC_DEMO_MODE=false
-#   SECRET_KEY=tu-clave-secreta
+# Desarrollo:
+#   docker-compose --profile dev up dev
+#
+# Ver logs:
+#   docker-compose logs -f app
+#
+# Verificar salud:
+#   curl http://localhost:3000/api/health
+#
+# Backup de base de datos:
+#   docker cp $(docker-compose ps -q app):/app/data/production.db ./backup.db
+#
+# ============================================

@@ -62,3 +62,4 @@ dev.db-journal
 # Word/Office temp files
 ~$*.docx
 ~$*.xlsx
+backups/

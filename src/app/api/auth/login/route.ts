@@ -27,9 +27,12 @@ import { verifyPassword } from '@/lib/auth/password';
 import { generateAccessToken, generateRefreshToken } from '@/lib/auth/jwt';
 
 // Configuración de cookies seguras
+// Nota: secure: true solo funciona con HTTPS. En localhost HTTP, debe ser false.
+const isSecure = process.env.NODE_ENV === 'production' && process.env.ALLOW_HTTP_COOKIES !== 'true';
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
+  secure: isSecure,
   sameSite: 'lax' as const,
   path: '/',
 };

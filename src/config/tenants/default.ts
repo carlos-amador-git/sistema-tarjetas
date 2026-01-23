@@ -9,65 +9,24 @@
 import { TenantConfig } from '@/types';
 
 /**
- * Obtiene las credenciales de demo desde variables de entorno.
+ * Obtiene las credenciales de demo.
  * Solo se cargan si NEXT_PUBLIC_DEMO_MODE=true
  */
 function getDemoCredentials(): TenantConfig['demoCredentials'] {
-  // Solo cargar credenciales si el modo demo está habilitado
   const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
   if (!isDemoMode) {
     return {};
   }
 
-  const credentials: TenantConfig['demoCredentials'] = {};
-
-  // Admin
-  if (process.env.NEXT_PUBLIC_DEMO_ADMIN_USER) {
-    credentials.admin = {
-      user: process.env.NEXT_PUBLIC_DEMO_ADMIN_USER,
-      pass: process.env.NEXT_PUBLIC_DEMO_ADMIN_PASS || '',
-      label: process.env.NEXT_PUBLIC_DEMO_ADMIN_LABEL || 'Admin',
-    };
-  }
-
-  // Almacén
-  if (process.env.NEXT_PUBLIC_DEMO_ALMACEN_USER) {
-    credentials.almacen = {
-      user: process.env.NEXT_PUBLIC_DEMO_ALMACEN_USER,
-      pass: process.env.NEXT_PUBLIC_DEMO_ALMACEN_PASS || '',
-      label: process.env.NEXT_PUBLIC_DEMO_ALMACEN_LABEL || 'Almacén',
-    };
-  }
-
-  // Logística
-  if (process.env.NEXT_PUBLIC_DEMO_LOGISTICA_USER) {
-    credentials.logistica = {
-      user: process.env.NEXT_PUBLIC_DEMO_LOGISTICA_USER,
-      pass: process.env.NEXT_PUBLIC_DEMO_LOGISTICA_PASS || '',
-      label: process.env.NEXT_PUBLIC_DEMO_LOGISTICA_LABEL || 'Logística',
-    };
-  }
-
-  // Sucursales
-  if (process.env.NEXT_PUBLIC_DEMO_SUCURSALES_USER) {
-    credentials.sucursales = {
-      user: process.env.NEXT_PUBLIC_DEMO_SUCURSALES_USER,
-      pass: process.env.NEXT_PUBLIC_DEMO_SUCURSALES_PASS || '',
-      label: process.env.NEXT_PUBLIC_DEMO_SUCURSALES_LABEL || 'Sucursales',
-    };
-  }
-
-  // Consulta
-  if (process.env.NEXT_PUBLIC_DEMO_CONSULTA_USER) {
-    credentials.consulta = {
-      user: process.env.NEXT_PUBLIC_DEMO_CONSULTA_USER,
-      pass: process.env.NEXT_PUBLIC_DEMO_CONSULTA_PASS || '',
-      label: process.env.NEXT_PUBLIC_DEMO_CONSULTA_LABEL || 'Consulta',
-    };
-  }
-
-  return credentials;
+  // Credenciales de demo hardcodeadas (solo visibles cuando DEMO_MODE=true)
+  return {
+    admin: { user: 'admin', pass: 'admin123', label: 'Admin' },
+    almacen: { user: 'tsys_user', pass: 'tsys123', label: 'Almacén' },
+    logistica: { user: 'dist_user', pass: 'dist123', label: 'Logística' },
+    sucursales: { user: 'mod_user', pass: 'mod123', label: 'Sucursales' },
+    consulta: { user: 'director', pass: 'dir123', label: 'Consulta' },
+  };
 }
 
 const defaultTenant: TenantConfig = {

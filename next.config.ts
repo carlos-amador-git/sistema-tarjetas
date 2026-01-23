@@ -5,16 +5,6 @@ const nextConfig: NextConfig = {
   // Output standalone para Docker
   output: 'standalone',
 
-  // Proxy para el backend Python
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/:path*`,
-      },
-    ];
-  },
-
   // Headers de seguridad
   async headers() {
     return [

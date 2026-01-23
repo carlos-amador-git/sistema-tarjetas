@@ -1,169 +1,122 @@
 {
-  "description": "Agentes especializados para el proyecto CardSystem",
-  "version": "1.0.0",
-  "agents": [
-    {
-      "id": "inventory-expert",
-      "name": "Experto en Inventario",
-      "trigger": "Cuando se trabaje con balance, capturas, movimientos o stock",
-      "context": [
-        "El balance tiene 4 áreas: Almacén (bóveda trabajo + principal), En Proceso, Logística (colocación + normal + devoluciones), Sucursales (colocación + stock)",
-        "Las capturas actualizan el balance en tiempo real via inventoryStore",
-        "Los movimientos se registran automáticamente en historial",
-        "Datos centralizados en src/data/mockData.ts"
-      ],
-      "files": [
-        "src/stores/inventoryStore.ts",
-        "src/data/mockData.ts",
-        "src/app/(dashboard)/balance/page.tsx",
-        "src/app/(dashboard)/capturas/*/page.tsx"
+  "description": "Agentes especializados para el proyecto CardSystem - Formato Antigravity",
+  "version": "2.0.0",
+  "lastUpdated": "2026-01-23",
+
+  "agents": {
+    "recovery": {
+      "name": "ContextRecovery",
+      "trigger": "startup / inicio de sesión",
+      "prompt": "Lee .claude/context.json y .claude/PLAN_FASES.md. Resúmeme en 3 bullets: (1) qué estábamos haciendo (sprint actual), (2) qué quedó pendiente, (3) errores conocidos o issues activos.",
+      "tools": ["filesystem", "sequential-thinking"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": [".claude/context.json", ".claude/PLAN_FASES.md"]
+    },
+
+    "deploy": {
+      "name": "DeployExpert",
+      "trigger": "when deploying, configuring Docker, or preparing for production",
+      "prompt": "Eres experto en despliegue de aplicaciones Next.js con Docker. Este proyecto usa: Next.js 16 standalone, Prisma con SQLite, multi-stage Docker build. Template DB pre-creada en build. Verifica siempre JWT_SECRET y DATABASE_URL antes de deploy.",
+      "tools": ["filesystem", "sequential-thinking"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": ["Dockerfile", "docker-compose.yml", "docs/DEPLOY.md"],
+      "commands": {
+        "build": "docker build -t cardsystem .",
+        "run": "docker run -p 3000:3000 -e JWT_SECRET=\"$(openssl rand -base64 32)\" -e DATABASE_URL=\"file:/app/data/production.db\" -v cardsystem_data:/app/data cardsystem",
+        "compose": "docker-compose up -d app",
+        "logs": "docker-compose logs -f app",
+        "health": "curl http://localhost:3000/api/health"
+      }
+    },
+
+    "inventory": {
+      "name": "InventoryExpert",
+      "trigger": "when working with balance, captures, movements, or stock",
+      "prompt": "Eres experto en el sistema de inventario de tarjetas bancarias. El balance tiene 4 áreas: Almacén (bóveda trabajo + principal), En Proceso (órdenes activas), Logística (colocación + normal + devoluciones), Sucursales (colocación + stock). Las capturas actualizan balance via API. Movimientos se registran en historial automáticamente.",
+      "tools": ["filesystem", "sqlite"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": [
+        "src/hooks/useQueries.ts",
+        "src/app/api/balance/route.ts",
+        "src/app/api/historial/route.ts"
       ]
     },
-    {
-      "id": "security-expert",
-      "name": "Experto en Seguridad",
-      "trigger": "Cuando se trabaje con autenticación, tokens, CSRF, rate limiting o auditoría",
-      "context": [
-        "Tokens almacenados en httpOnly cookies (no localStorage)",
-        "Rate limiting: 5 intentos/min, bloqueo 5 min",
-        "CSRF: Double Submit Cookie pattern",
-        "Sanitización XSS en todos los inputs",
-        "Audit logging para acciones críticas"
-      ],
-      "files": [
+
+    "security": {
+      "name": "SecurityExpert",
+      "trigger": "when working with auth, tokens, CSRF, rate limiting, or audit",
+      "prompt": "Eres experto en seguridad web. Este proyecto implementa: tokens JWT en httpOnly cookies (no localStorage), rate limiting (5 intentos/min, bloqueo 5 min), CSRF con Double Submit Cookie, sanitización XSS, audit logging. Soporte opcional 2FA TOTP.",
+      "tools": ["filesystem", "sequential-thinking"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": [
         "src/lib/security/rateLimit.ts",
         "src/lib/security/csrf.ts",
-        "src/lib/security/sanitize.ts",
         "src/lib/security/auditLog.ts",
-        "src/app/api/auth/login/route.ts",
-        "src/app/api/auth/csrf/route.ts"
+        "src/app/api/auth/login/route.ts"
       ]
     },
-    {
-      "id": "testing-expert",
-      "name": "Experto en Testing",
-      "trigger": "Cuando se escriban tests, se mejore coverage, o se depuren errores de tests",
-      "context": [
-        "Jest configurado con ts-jest y jsdom",
-        "91 tests actuales pasando",
-        "37 tests de seguridad en src/__tests__/security/",
-        "Playwright configurado para E2E",
-        "Coverage objetivo: > 70%"
-      ],
-      "files": [
-        "jest.config.js",
-        "jest.setup.js",
-        "playwright.config.ts",
-        "src/__tests__/**/*"
-      ],
+
+    "testing": {
+      "name": "TestingExpert",
+      "trigger": "when writing tests, improving coverage, or debugging test failures",
+      "prompt": "Eres experto en testing. Este proyecto usa: Jest con ts-jest (654 unit tests), Playwright para E2E (108 tests en 4 browsers). Coverage actual: 50.66%. Mockear APIs en tests de hooks. Rate limit responses (429) deben manejarse en E2E.",
+      "tools": ["filesystem"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": ["jest.config.js", "playwright.config.ts"],
       "commands": {
-        "runTests": "npm test",
-        "runCoverage": "npm run test:coverage",
-        "runE2E": "npm run e2e",
-        "runE2EUI": "npm run e2e:ui"
+        "test": "npm test",
+        "coverage": "npm run test:coverage",
+        "e2e": "npm run e2e",
+        "e2eUI": "npm run e2e:ui"
       }
     },
-    {
-      "id": "crud-expert",
-      "name": "Experto en CRUD",
-      "trigger": "Cuando se trabaje con formularios, modales, crear/editar/eliminar usuarios, productos u órdenes",
-      "context": [
-        "Formularios en src/components/forms/",
-        "Modal reutilizable en src/components/ui/Modal.tsx",
-        "Toast notifications integradas",
-        "Stores: userStore.ts, productStore.ts, inventoryStore.ts",
-        "Validación en cliente antes de submit"
-      ],
-      "files": [
-        "src/components/forms/NuevoUsuarioForm.tsx",
-        "src/components/forms/EditUsuarioForm.tsx",
-        "src/components/forms/NuevoProductoForm.tsx",
-        "src/components/forms/EditProductoForm.tsx",
-        "src/components/forms/NuevaOrdenForm.tsx",
-        "src/stores/userStore.ts",
-        "src/stores/productStore.ts"
-      ]
-    },
-    {
-      "id": "tenant-expert",
-      "name": "Experto en Multi-Tenant",
-      "trigger": "Cuando se configure branding, se añadan nuevos tenants, o se trabaje con personalización",
-      "context": [
-        "Sistema white-label completamente personalizable",
-        "Configuración por tenant en src/config/tenants/",
-        "Assets por tenant en public/tenants/",
-        "Feature flags por tenant",
-        "TenantProvider envuelve toda la app"
-      ],
-      "files": [
-        "src/config/tenants/index.ts",
-        "src/config/tenants/default.ts",
-        "src/config/branding.ts",
-        "src/hooks/useTenant.tsx",
-        "docs/MULTI_TENANT.md"
-      ]
-    },
-    {
-      "id": "deploy-expert",
-      "name": "Experto en Despliegue",
-      "trigger": "Cuando se prepare para producción, se configure Docker, o se despliegue a Antigravity",
-      "context": [
-        "Target: Antigravity",
-        "Docker configurado con healthcheck",
-        "Scripts automatizados en scripts/",
-        "Variables de entorno en .env.local (dev) y configuración Antigravity (prod)",
-        "NEXT_PUBLIC_DEMO_MODE=false en producción"
-      ],
-      "files": [
-        "Dockerfile",
-        "docker-compose.yml",
-        "DEPLOY.md",
-        "scripts/setup.sh",
-        "scripts/deploy-antigravity.sh",
-        "next.config.ts"
-      ],
+
+    "database": {
+      "name": "DatabaseExpert",
+      "trigger": "when modifying schema, running migrations, or working with Prisma",
+      "prompt": "Eres experto en Prisma con SQLite/libsql. Schema tiene 9 modelos: User, AuditLog, RateLimit, Producto, BalanceProducto, Captura, MovimientoHistorial, OrdenCompra, ForecastProducto. Usar 'db push' para desarrollo, migraciones para producción.",
+      "tools": ["filesystem", "sqlite"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": ["prisma/schema.prisma"],
       "commands": {
-        "buildDocker": "docker build -t cardsystem .",
-        "runDocker": "docker run -p 3000:3000 cardsystem",
-        "deploy": "./scripts/deploy-antigravity.sh"
-      }
-    },
-    {
-      "id": "database-expert",
-      "name": "Experto en Base de Datos",
-      "trigger": "Cuando se modifique el schema, se hagan migraciones, o se trabaje con Prisma",
-      "context": [
-        "SQLite via Prisma + libsql",
-        "Schema en prisma/schema.prisma",
-        "9 modelos: User, AuditLog, RateLimit, Producto, BalanceProducto, Captura, MovimientoHistorial, OrdenCompra, ForecastProducto",
-        "Seed data en prisma/seed.ts"
-      ],
-      "files": [
-        "prisma/schema.prisma",
-        "prisma/seed.ts",
-        "prisma.config.ts"
-      ],
-      "commands": {
-        "generate": "npm run db:generate",
-        "migrate": "npm run db:migrate",
-        "push": "npm run db:push",
-        "studio": "npm run db:studio",
+        "generate": "npx prisma generate",
+        "push": "npx prisma db push",
+        "studio": "npx prisma studio",
         "seed": "npm run db:seed"
       }
+    },
+
+    "auditor": {
+      "name": "CodeAuditor",
+      "trigger": "when doing deep code review or architecture analysis",
+      "prompt": "Auditas código buscando: (1) complejidad innecesaria, (2) queries ineficientes, (3) APIs mal usadas, (4) secrets expuestos, (5) vulnerabilidades OWASP Top 10. Usa sequential-thinking para análisis profundo.",
+      "tools": ["filesystem", "sequential-thinking"],
+      "model": "claude-opus-4.5"
     }
-  ],
+  },
+
   "globalContext": {
     "projectName": "CardSystem",
+    "fullName": "Sistema de Inventario de Tarjetas Bancarias",
     "mainLanguage": "TypeScript",
-    "framework": "Next.js 16 (App Router)",
-    "stateManagement": "Zustand con persistencia localStorage",
-    "currentPhase": "Fase 3 - Testing y Optimización",
+    "framework": "Next.js 16.1.4 (App Router)",
+    "database": "SQLite via Prisma + libsql",
+    "stateManagement": "React Query (server) + Zustand (client)",
+    "currentPhase": "Fase 5 - Producción",
+    "currentSprint": 19,
     "criticalFiles": [
-      "src/data/mockData.ts",
-      "src/stores/inventoryStore.ts",
       "prisma/schema.prisma",
-      "AUDITORIA_FUNCIONAL.md"
+      "src/hooks/useQueries.ts",
+      "src/lib/api.ts",
+      ".claude/context.json",
+      ".claude/PLAN_FASES.md"
     ]
   },
-  "lastUpdated": "2026-01-22"
+
+  "activationExamples": {
+    "startup": "Activa el agente 'ContextRecovery'. Lee el contexto y dime en qué estábamos.",
+    "deploy": "Activa 'DeployExpert'. Necesito desplegar a producción con Docker.",
+    "security": "Activa 'SecurityExpert'. Revisa la implementación de autenticación.",
+    "audit": "Activa 'CodeAuditor'. Haz una auditoría completa del proyecto."
+  }
 }

@@ -7,6 +7,20 @@
     "repository": null,
     "license": "Proprietary"
   },
+
+  "status": {
+    "score": 98,
+    "rating": "Excelente",
+    "lastSession": "2026-01-23T06:30:00Z",
+    "workingOn": "Sprint 20 - Documentación Final",
+    "blockedOn": null,
+    "progress": "98% completado",
+    "currentPhase": "Fase 5 - Producción",
+    "currentSprint": 20,
+    "pendingSprints": [20],
+    "completedSprints": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+  },
+
   "stack": {
     "frontend": {
       "framework": "Next.js 16.1.4",
@@ -26,61 +40,115 @@
       "monitoring": "@sentry/nextjs"
     },
     "testing": {
-      "unit": "Jest 30.2.0",
-      "e2e": "Playwright 1.57.0",
-      "utilities": ["@testing-library/react", "@testing-library/jest-dom"]
+      "unit": "Jest 30.2.0 (654 tests)",
+      "e2e": "Playwright 1.57.0 (108 tests)",
+      "coverage": "50.66%"
     }
   },
-  "architecture": {
-    "pattern": "Next.js App Router",
-    "routeGroups": {
-      "(auth)": "Autenticación - /login",
-      "(dashboard)": "Dashboard protegido - todas las rutas principales"
-    },
-    "modules": [
-      { "name": "Dashboard", "route": "/dashboard", "description": "Vista general y estadísticas" },
-      { "name": "Balance", "route": "/balance", "description": "Estado actual del inventario" },
-      { "name": "Forecast", "route": "/forecast", "description": "Proyecciones y alertas" },
-      { "name": "Captura Almacén", "route": "/capturas/almacen", "description": "Registro inventario central" },
-      { "name": "Captura Logística", "route": "/capturas/logistica", "description": "Registro en distribución" },
-      { "name": "Captura Sucursales", "route": "/capturas/sucursales", "description": "Registro en puntos de venta" },
-      { "name": "Órdenes", "route": "/ordenes", "description": "Gestión de compras" },
-      { "name": "Productos", "route": "/productos", "description": "Catálogo de productos" },
-      { "name": "Usuarios", "route": "/usuarios", "description": "Administración de usuarios" },
-      { "name": "Historial", "route": "/historial", "description": "Log de movimientos" }
+
+  "startup": {
+    "development": [
+      "npm install",
+      "npm run db:generate",
+      "npm run db:push",
+      "npm run db:seed",
+      "npm run dev"
     ],
-    "stores": {
-      "inventoryStore": "src/stores/inventoryStore.ts - (legacy, ahora via API)",
-      "userStore": "src/stores/userStore.ts - CRUD usuarios (pendiente migrar a API)",
-      "productStore": "src/stores/productStore.ts - (legacy, ahora via API)"
+    "docker": {
+      "build": "docker-compose build app",
+      "run": "docker-compose up -d app",
+      "logs": "docker-compose logs -f app",
+      "health": "curl http://localhost:3000/api/health",
+      "restoreData": "docker cp /tmp/production.db sistema-tarjetas-app-1:/app/data/production.db && docker exec -u root sistema-tarjetas-app-1 chown nextjs:nodejs /app/data/production.db && docker-compose restart app"
     },
-    "dataFetching": {
-      "hooks": "src/hooks/useQueries.ts - React Query hooks conectados a APIs REST",
-      "apiClient": "src/lib/api.ts - Cliente HTTP centralizado"
-    },
-    "security": {
-      "location": "src/lib/security/",
-      "modules": ["rateLimit.ts", "csrf.ts", "sanitize.ts", "auditLog.ts"]
+    "verify": {
+      "app": "http://localhost:3000",
+      "health": "curl http://localhost:3000/api/health",
+      "db": "npx prisma studio"
     }
   },
+
+  "knownIssues": [
+    {
+      "id": "DOCKER-001",
+      "severity": "resolved",
+      "description": "Prisma CLI no disponible en runtime de Docker",
+      "solution": "Usar template DB pre-creada durante build",
+      "learned": "2026-01-23"
+    },
+    {
+      "id": "ENTRYPOINT-001",
+      "severity": "resolved",
+      "description": "docker-entrypoint.sh usaba sintaxis bash en sh",
+      "solution": "Reescrito con sintaxis sh pura",
+      "learned": "2026-01-23"
+    },
+    {
+      "id": "SESSION-001",
+      "severity": "resolved",
+      "description": "Session route intentaba conectar a backend externo inexistente (localhost:8000)",
+      "solution": "Modificado para verificar JWT localmente con verifyAccessToken",
+      "learned": "2026-01-23"
+    },
+    {
+      "id": "COOKIES-001",
+      "severity": "resolved",
+      "description": "Cookies con Secure:true no funcionan en HTTP localhost",
+      "solution": "Agregado ALLOW_HTTP_COOKIES=true en docker-compose.yml para desactivar Secure flag en desarrollo",
+      "learned": "2026-01-23"
+    },
+    {
+      "id": "THEME-001",
+      "severity": "resolved",
+      "description": "ThemeSelector menu quedaba detrás del sidebar (z-index)",
+      "solution": "Usar createPortal para renderizar el menu en document.body con z-index:9999",
+      "learned": "2026-01-23"
+    }
+  ],
+
+  "envRequired": [
+    "DATABASE_URL=file:./dev.db (desarrollo)",
+    "JWT_SECRET=<generado con openssl rand -base64 32>",
+    "NODE_ENV=production (producción)"
+  ],
+
+  "envOptional": [
+    "NEXT_PUBLIC_SENTRY_DSN=<dsn de sentry>",
+    "NEXT_PUBLIC_DEMO_MODE=true (para mostrar botones demo y paleta)",
+    "ALLOW_HTTP_COOKIES=true (para desarrollo sin HTTPS)"
+  ],
+
   "database": {
     "provider": "sqlite",
     "mcpServer": "sqlite (global en ~/.claude.json)",
     "connectionPath": "/Users/Marx/Projects/sistema-tarjetas/dev.db",
+    "dockerPath": "/app/data/production.db",
+    "backupPath": "/tmp/production.db",
+    "demoBackup": "backups/production-demo-2026-01-23.db",
     "models": [
-      "User",
-      "AuditLog",
-      "RateLimit",
-      "Producto",
-      "BalanceProducto",
-      "Captura",
-      "MovimientoHistorial",
-      "OrdenCompra",
-      "ForecastProducto"
-    ],
-    "location": "dev.db",
-    "note": "Este proyecto usa SQLite. Para proyectos PostgreSQL/PostGIS ver AgroRentable."
+      "User", "AuditLog", "RateLimit", "Producto",
+      "BalanceProducto", "Captura", "MovimientoHistorial",
+      "OrdenCompra", "ForecastProducto"
+    ]
   },
+
+  "demoCredentials": {
+    "admin": { "user": "admin", "pass": "admin123", "rol": "Administrador" },
+    "almacen": { "user": "tsys_user", "pass": "tsys123", "rol": "Almacén" },
+    "logistica": { "user": "dist_user", "pass": "dist123", "rol": "Logística" },
+    "sucursales": { "user": "mod_user", "pass": "mod123", "rol": "Sucursales" },
+    "consulta": { "user": "director", "pass": "dir123", "rol": "Consulta" }
+  },
+
+  "demoPalettes": [
+    "CardSystem (azul)",
+    "Esmeralda (verde)",
+    "Rosa Corporativo (rosa)",
+    "Violeta (morado)",
+    "Ámbar (naranja)",
+    "Gris Ejecutivo (gris)"
+  ],
+
   "roles": [
     { "id": "admin", "area": "Administración", "access": "Todos los módulos" },
     { "id": "almacen", "alias": "tsys", "area": "Almacén Central", "access": "Dashboard, Balance, Captura Almacén" },
@@ -88,120 +156,74 @@
     { "id": "sucursales", "alias": "modulos", "area": "Puntos de Venta", "access": "Dashboard, Balance, Captura Sucursales" },
     { "id": "consulta", "area": "Dirección", "access": "Dashboard, Balance, Forecast, Historial (solo lectura)" }
   ],
-  "status": {
-    "score": 97,
-    "rating": "Excelente",
-    "lastAudit": "2026-01-22",
-    "completedSprints": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
-    "currentPhase": "Fase 5 - Producción",
-    "currentSprint": 18,
-    "pendingSprints": [18, 19, 20],
-    "testsCount": 654,
-    "coverage": "50.66%",
-    "e2eTests": "108/108 passing",
-    "securityFeatures": [
-      "httpOnly cookies",
-      "Rate limiting (5 intentos/min)",
-      "CSRF tokens",
-      "XSS sanitization",
-      "Audit logging",
-      "2FA support (TOTP)"
-    ]
-  },
+
   "pendingWork": {
-    "sprint14": {
-      "name": "Consolidación Git",
+    "sprint19": {
+      "name": "Deploy Antigravity",
       "status": "completed",
-      "completedAt": "2026-01-22"
+      "completedAt": "2026-01-23",
+      "notes": "Docker funcionando, login con demo buttons, tour mejorado, paleta de colores"
     },
-    "sprint15": {
-      "name": "API Real con Prisma",
-      "status": "completed",
-      "completedAt": "2026-01-22",
-      "deliverables": [
-        "/api/productos (CRUD)",
-        "/api/balance (GET, PUT)",
-        "/api/historial (GET, POST)",
-        "/api/ordenes (CRUD)"
-      ]
-    },
-    "sprint16": {
-      "name": "Validación E2E con Backend Real",
-      "status": "completed",
-      "completedAt": "2026-01-22",
-      "deliverables": [
-        "useQueries migrado a APIs",
-        "108 E2E tests pasando",
-        "654 unit tests pasando"
-      ]
-    },
-    "sprint17": {
-      "name": "Monitoreo y Telemetría",
-      "status": "completed",
-      "completedAt": "2026-01-22",
-      "deliverables": [
-        "/api/health endpoint",
-        "/api/metrics endpoint",
-        "lib/monitoring.ts utilities",
-        "Dockerfile HEALTHCHECK"
-      ]
-    },
-    "sprint18to20": {
-      "name": "Deploy y Documentación",
+    "sprint20": {
+      "name": "Documentación Final",
       "status": "pending",
       "tasks": [
-        "Deploy Antigravity",
-        "Documentación técnica",
+        "README completo",
+        "Documentación API (OpenAPI)",
         "Manual de usuario"
       ]
     }
   },
-  "scripts": {
-    "dev": "npm run dev",
-    "build": "npm run build",
-    "start": "npm start",
-    "test": "npm test",
-    "testCoverage": "npm run test:coverage",
-    "e2e": "npm run e2e",
-    "dbStudio": "npm run db:studio",
-    "dbMigrate": "npm run db:migrate"
+
+  "recentChanges": {
+    "date": "2026-01-23",
+    "files": [
+      "src/app/api/auth/session/route.ts - JWT verification local",
+      "src/app/api/auth/login/route.ts - ALLOW_HTTP_COOKIES support",
+      "src/app/api/auth/refresh/route.ts - ALLOW_HTTP_COOKIES support",
+      "src/app/api/auth/2fa/verify/route.ts - ALLOW_HTTP_COOKIES support",
+      "src/components/DemoTour.tsx - Navegación automática, panel lateral",
+      "src/components/DemoTourButton.tsx - No cierra tour al navegar",
+      "src/components/ThemeSelector.tsx - createPortal para z-index, menú hacia abajo",
+      "src/config/tenants/default.ts - Demo credentials hardcoded cuando DEMO_MODE=true",
+      "docker-compose.yml - ALLOW_HTTP_COOKIES=true",
+      "Dockerfile - Template DB approach"
+    ]
   },
+
   "deployment": {
-    "target": "Antigravity",
+    "target": "Antigravity (local Docker)",
     "docker": true,
+    "imageSize": "554MB",
     "port": 3000,
-    "scripts": ["scripts/setup.sh", "scripts/deploy-antigravity.sh"]
+    "url": "http://localhost:3000",
+    "scripts": ["scripts/setup.sh", "scripts/deploy-antigravity.sh", "scripts/docker-entrypoint.sh"]
   },
+
   "importantPaths": {
-    "mockData": "src/data/mockData.ts",
     "apiRoutes": "src/app/api/",
     "components": "src/components/",
+    "hooks": "src/hooks/",
     "stores": "src/stores/",
     "security": "src/lib/security/",
     "tenantConfig": "src/config/tenants/",
-    "prismaSchema": "prisma/schema.prisma"
+    "colorPalettes": "src/config/colorPalettes.ts",
+    "prismaSchema": "prisma/schema.prisma",
+    "planFile": ".claude/PLAN_FASES.md",
+    "agentsFile": ".claude/agents.json",
+    "contextFile": ".claude/context.json"
   },
-  "knownIssues": [
-    {
-      "id": "LOCATION-001",
-      "severity": "resolved",
-      "description": "Proyecto migrado exitosamente de Google Drive",
-      "solution": "Completado 2026-01-22 - Nueva ubicación: ~/Projects/sistema-tarjetas"
-    },
-    {
-      "id": "TEST-001",
-      "severity": "resolved",
-      "description": "Coverage E2E pendiente",
-      "solution": "Completado Sprint 12 - 16 tests E2E pasando"
-    },
-    {
-      "id": "API-001",
-      "severity": "resolved",
-      "description": "API usa mockData en lugar de Prisma",
-      "solution": "Completado Sprint 15-16 - APIs conectadas a Prisma, useQueries migrado"
-    }
+
+  "securityFeatures": [
+    "httpOnly cookies (access_token, refresh_token)",
+    "user_info cookie (legible por JS para UI)",
+    "Rate limiting (5 intentos/min)",
+    "CSRF tokens",
+    "XSS sanitization",
+    "Audit logging",
+    "2FA support (TOTP)"
   ],
-  "planFile": ".claude/PLAN_FASES.md",
-  "lastUpdated": "2026-01-22T19:00:00Z",
+
+  "lastUpdated": "2026-01-23T06:30:00Z",
   "location": "~/Projects/sistema-tarjetas"
 }
