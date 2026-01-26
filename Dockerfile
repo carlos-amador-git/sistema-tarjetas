@@ -1,5 +1,5 @@
 # =============================================================================
-# Dockerfile - CardSystem (Next.js + Prisma + SQLite)
+# Dockerfile - CardSystem (Next.js + Prisma + PostgreSQL)
 #
 # Multi-stage build optimizado para producción
 # =============================================================================
@@ -81,9 +81,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Build de la aplicación
 RUN npm run build
 
-# Crear base de datos template con schema aplicado
-RUN DATABASE_URL="file:./template.db" npx prisma db push --accept-data-loss
-
 # -----------------------------------------------------------------------------
 # Stage 3: Runner (Production)
 # -----------------------------------------------------------------------------
@@ -97,9 +94,6 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Crear directorio para datos (SQLite)
-RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
-
 # Configuración de producción
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -111,12 +105,12 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copiar Prisma client para runtime
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+# Copiar esquema de prisma (necesario para migraciones/db push)
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
-# Copiar base de datos template (con schema ya aplicado)
-COPY --from=builder --chown=nextjs:nodejs /app/template.db ./template.db
+# Instalar prisma CLI globalmente para ejecutar migraciones/db push en runtime
+# Esto evita tener que copiar todo node_modules
+RUN npm install -g prisma
 
 # Script de inicio
 COPY --chown=nextjs:nodejs scripts/docker-entrypoint.sh ./docker-entrypoint.sh

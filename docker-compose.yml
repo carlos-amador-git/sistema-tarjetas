@@ -1,6 +1,6 @@
 # ============================================
 # CardSystem - Docker Compose
-# Next.js + Prisma + SQLite
+# Next.js + Prisma + PostgreSQL
 # ============================================
 
 services:
@@ -33,15 +33,16 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=file:/app/data/production.db
+      # Construir URL de conexión a partir de variables individuales o usar DATABASE_URL directa si se provee
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sistema_tarjetas}?schema=public}
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-false}
       - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
       - SENTRY_DSN=${SENTRY_DSN:-}
       - ALLOW_HTTP_COOKIES=true
-    volumes:
-      # Persistir base de datos SQLite
-      - app_data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
@@ -50,49 +51,23 @@ services:
       retries: 3
       start_period: 10s
 
-  # Servicio para desarrollo (opcional)
-  dev:
-    profiles:
-      - dev
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: builder
-    ports:
-      - "3000:3000"
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15-alpine
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=file:./dev.db
-      - JWT_SECRET=dev-secret-not-for-production
-      - NEXT_PUBLIC_DEMO_MODE=true
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-sistema_tarjetas}
     volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
-    command: npm run dev
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  app_data:
-    driver: local
-
-# ============================================
-# USO:
-# ============================================
-#
-# Producción:
-#   export JWT_SECRET="tu-secreto-seguro"
-#   docker-compose up -d app
-#
-# Desarrollo:
-#   docker-compose --profile dev up dev
-#
-# Ver logs:
-#   docker-compose logs -f app
-#
-# Verificar salud:
-#   curl http://localhost:3000/api/health
-#
-# Backup de base de datos:
-#   docker cp $(docker-compose ps -q app):/app/data/production.db ./backup.db
-#
-# ============================================
+  postgres_data:
