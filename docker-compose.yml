@@ -33,8 +33,7 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
-      # Se espera que DATABASE_URL sea provista externamente o se construya de forma simple
-      - DATABASE_URL=${DATABASE_URL}
+      # Se espera que DATABASE_URL sea provista externamente por Coolify o manualmente
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-false}
       - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
