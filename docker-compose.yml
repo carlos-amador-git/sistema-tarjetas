@@ -33,7 +33,8 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
-      # Se espera que DATABASE_URL sea provista externamente por Coolify o manualmente
+      # Construir DATABASE_URL automáticamente usando el servicio 'db' definido abajo
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sistema_tarjetas}
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-false}
       - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
