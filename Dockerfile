@@ -16,6 +16,7 @@ WORKDIR /app
 # Copiar archivos de dependencias
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
+COPY prisma.config.ts ./
 
 # Instalar TODAS las dependencias (necesarias para Prisma generate)
 RUN npm ci
@@ -107,6 +108,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Copiar esquema de prisma (necesario para migraciones/db push)
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./
 
 # Instalar prisma CLI globalmente para ejecutar migraciones/db push en runtime
 # Esto evita tener que copiar todo node_modules
