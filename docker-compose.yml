@@ -33,8 +33,8 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
-      # Construir URL de conexión a partir de variables individuales o usar DATABASE_URL directa si se provee
-      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sistema_tarjetas}?schema=public}
+      # Se espera que DATABASE_URL sea provista externamente o se construya de forma simple
+      - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-false}
       - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
