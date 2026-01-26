@@ -49,7 +49,6 @@ export async function GET() {
       latencyMs: Date.now() - dbStart,
     };
   } catch (error) {
-    console.error('Health Check DB Error:', error);
     checks.database = {
       status: 'down',
       error: error instanceof Error ? error.message : 'Database connection failed',
@@ -78,9 +77,8 @@ export async function GET() {
     checks,
   };
 
-  // Return 200 always for debugging, to see the error in the response body
-  // const httpStatus = status === 'unhealthy' ? 503 : 200;
-  const httpStatus = 200;
+  // Return 503 if unhealthy
+  const httpStatus = status === 'unhealthy' ? 503 : 200;
 
   return NextResponse.json(response, { status: httpStatus });
 }

@@ -4,12 +4,6 @@ import { PrismaClient } from '@prisma/client'
 
 const connectionString = process.env.DATABASE_URL
 
-// Debug connection string (mask password)
-if (process.env.NODE_ENV === 'production') {
-  const maskedUrl = connectionString?.replace(/:([^:@]+)@/, ':****@');
-  console.log('Initializing Prisma with DATABASE_URL:', maskedUrl);
-}
-
 const pool = new Pool({ connectionString })
 const adapter = new PrismaPg(pool)
 
