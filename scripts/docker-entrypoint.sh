@@ -9,6 +9,10 @@ echo "Starting deployment scripts..."
 echo "Pushing database schema..."
 npx prisma db push
 
+# Ejecutar seed de producción
+echo "Running production seed..."
+npx tsx prisma/seed-production.ts
+
 # Iniciar la aplicación
 echo "Starting application..."
 exec "$@"
