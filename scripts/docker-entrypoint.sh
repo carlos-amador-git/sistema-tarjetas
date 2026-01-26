@@ -11,7 +11,7 @@ npx prisma db push
 
 # Ejecutar seed de producción
 echo "Running production seed..."
-npx tsx prisma/seed-production.ts
+npx tsx prisma/seed-production.ts || echo "Seed failed but continuing..."
 
 # Iniciar la aplicación
 echo "Starting application..."
