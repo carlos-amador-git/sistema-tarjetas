@@ -110,9 +110,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./
 
-# Instalar prisma CLI globalmente para ejecutar migraciones/db push en runtime
-# Esto evita tener que copiar todo node_modules
-RUN npm install -g prisma
+# Instalar prisma CLI localmente para ejecutar migraciones/db push en runtime
+# Se instala localmente para que prisma.config.ts pueda resolver 'prisma/config'
+RUN npm install prisma
 
 # Script de inicio
 COPY --chown=nextjs:nodejs scripts/docker-entrypoint.sh ./docker-entrypoint.sh
