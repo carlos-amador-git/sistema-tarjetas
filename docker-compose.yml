@@ -31,6 +31,9 @@ services:
         - NEXT_PUBLIC_DEMO_CONSULTA_LABEL=${NEXT_PUBLIC_DEMO_CONSULTA_LABEL:-}
     ports:
       - "${PORT:-3000}:3000"
+    # Exponer el puerto 3000 explícitamente para que el proxy (Coolify/Traefik) sepa a dónde dirigir el tráfico
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
       # Construir DATABASE_URL automáticamente usando el servicio 'db' definido abajo
