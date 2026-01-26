@@ -34,9 +34,6 @@ services:
     # Exponer el puerto 3000 explícitamente para que el proxy (Coolify/Traefik) sepa a dónde dirigir el tráfico
     expose:
       - "3000"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.app.loadbalancer.server.port=3000"
     environment:
       - NODE_ENV=production
       # Construir DATABASE_URL automáticamente usando el servicio 'db' definido abajo
