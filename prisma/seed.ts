@@ -1,10 +1,11 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSql } from '@prisma/adapter-libsql'
+import { Pool } from 'pg'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { hashPassword } from '../src/lib/auth/password'
 
-const DATABASE_URL = process.env.DATABASE_URL || 'file:./dev.db'
-
-const adapter = new PrismaLibSql({ url: DATABASE_URL })
+const connectionString = process.env.DATABASE_URL
+const pool = new Pool({ connectionString })
+const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
 // Contraseñas para usuarios demo
