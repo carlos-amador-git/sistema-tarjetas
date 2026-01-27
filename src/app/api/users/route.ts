@@ -88,6 +88,11 @@ export async function POST(request: NextRequest) {
     const cleanNombre = sanitizeString(nombre);
     const cleanArea = sanitizeString(area);
     
+    // Validar username
+    if (!cleanUsername) {
+        return NextResponse.json({ error: 'Nombre de usuario inválido (solo letras, números, guiones y guiones bajos)' }, { status: 400 });
+    }
+
     // Validar formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!cleanEmail || !emailRegex.test(cleanEmail)) {
@@ -141,7 +146,7 @@ export async function POST(request: NextRequest) {
 
     // 6. Audit Log
     await logAuditEvent({
-      action: 'USER_CREATED',
+      action: 'USER_CREATE',
       severity: 'INFO',
       userId: null, // El creador ya fue verificado, idealmente registraríamos quién lo creó si el modelo lo permite
       username: 'admin', // Simplificación, deberíamos usar el username del token

@@ -40,7 +40,7 @@ interface FormData {
 
 export function NuevoUsuarioForm({ onSuccess, onCancel }: NuevoUsuarioFormProps) {
   // const crearUsuario = useUserStore((state) => state.crearUsuario); // Deprecated: usar API
-  const { toast } = useToast();
+  const { success } = useToast();
   
   const [formData, setFormData] = useState<FormData>({
     nombre: '',
@@ -136,13 +136,9 @@ export function NuevoUsuarioForm({ onSuccess, onCancel }: NuevoUsuarioFormProps)
         throw new Error(data.error || 'Error al crear usuario');
       }
       
-      // Intentar usar toast si existe, o usar alert como fallback
-      if (typeof toast === 'function') {
-          toast({
-            title: 'Usuario creado',
-            description: `El usuario ${formData.username} ha sido creado exitosamente.`,
-            type: 'success',
-          });
+      // Usar toast de éxito
+      if (success) {
+        success('Usuario creado', `El usuario ${formData.username} ha sido creado exitosamente.`);
       } else {
         alert('Usuario creado exitosamente');
       }
