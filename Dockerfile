@@ -110,10 +110,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./
 
-# Instalar prisma CLI localmente para ejecutar migraciones/db push en runtime
-# Se instala localmente para que prisma.config.ts pueda resolver 'prisma/config'
-# También instalamos bcrypt y @types/bcrypt para que el seed funcione
-RUN npm install prisma tsx bcrypt @types/bcrypt
+# Copiar node_modules completo del builder (incluye @prisma/client generado y dependencias de pg)
+# Necesario para ejecutar migraciones, db push y seed en runtime
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 # Script de inicio
 COPY --chown=nextjs:nodejs scripts/docker-entrypoint.sh ./docker-entrypoint.sh
