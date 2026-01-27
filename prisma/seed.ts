@@ -91,13 +91,18 @@ async function main() {
 
     for (const usuario of usuarios) {
         const password = await hashPassword(DEMO_PASSWORDS[usuario.username])
-        await prisma.user.create({
-            data: {
+        await prisma.user.upsert({
+            where: { username: usuario.username },
+            update: {
+                ...usuario,
+                password
+            },
+            create: {
                 ...usuario,
                 password
             }
         })
-        console.log(`  ✓ Created user: ${usuario.username}`)
+        console.log(`  ✓ Upserted user: ${usuario.username}`)
     }
 
     // ============================================================================

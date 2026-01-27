@@ -241,33 +241,48 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              {/* Credenciales de demostración */}
-              {features.showDemo && Object.keys(demoCredentials).length > 0 && (
-                <div className="mt-8 pt-6 border-t border-slate-700/50">
-                  <p className="text-xs text-slate-500 text-center mb-4">Credenciales de demostración</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(demoCredentials).map(([key, cred]) => (
-                      cred && (
-                        <button
-                          key={key}
-                          onClick={() => handleDemoLogin(cred.user, cred.pass)}
-                          disabled={isSubmitting}
-                          className={cn(
-                            'py-2 px-3 rounded-lg text-xs font-medium',
-                            'bg-slate-800/50 text-slate-400',
-                            'hover:bg-slate-700/50 hover:text-slate-300',
-                            'border border-slate-700/50',
-                            'transition-all duration-200',
-                            'disabled:opacity-50 disabled:cursor-not-allowed'
-                          )}
-                        >
-                          {cred.label}
-                        </button>
-                      )
-                    ))}
-                  </div>
+              {/* Tabla de Credenciales Demo */}
+              <div className="mt-8 pt-6 border-t border-slate-700/50">
+                <h3 className="text-lg font-semibold text-white mb-4">Credenciales Demo - CardSystem</h3>
+                <div className="overflow-x-auto rounded-lg border border-slate-700/50">
+                  <table className="w-full text-sm text-left text-slate-300">
+                    <thead className="text-xs text-slate-400 uppercase bg-slate-800/80 border-b border-slate-700/50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">Rol</th>
+                        <th className="px-4 py-3 font-semibold">Usuario</th>
+                        <th className="px-4 py-3 font-semibold">Contraseña</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-700/50 bg-slate-800/20">
+                      <tr className="hover:bg-slate-700/30 transition-colors cursor-pointer group" onClick={() => handleDemoLogin('admin', 'admin123')}>
+                        <td className="px-4 py-3 font-medium text-white group-hover:text-blue-300 transition-colors">Admin</td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">admin</span></td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">admin123</span></td>
+                      </tr>
+                      <tr className="hover:bg-slate-700/30 transition-colors cursor-pointer group" onClick={() => handleDemoLogin('tsys_user', 'tsys123')}>
+                        <td className="px-4 py-3 font-medium text-white group-hover:text-blue-300 transition-colors">Almacén</td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">tsys_user</span></td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">tsys123</span></td>
+                      </tr>
+                      <tr className="hover:bg-slate-700/30 transition-colors cursor-pointer group" onClick={() => handleDemoLogin('dist_user', 'dist123')}>
+                        <td className="px-4 py-3 font-medium text-white group-hover:text-blue-300 transition-colors">Logística</td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">dist_user</span></td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">dist123</span></td>
+                      </tr>
+                      <tr className="hover:bg-slate-700/30 transition-colors cursor-pointer group" onClick={() => handleDemoLogin('mod_user', 'mod123')}>
+                        <td className="px-4 py-3 font-medium text-white group-hover:text-blue-300 transition-colors">Sucursales</td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">mod_user</span></td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">mod123</span></td>
+                      </tr>
+                      <tr className="hover:bg-slate-700/30 transition-colors cursor-pointer group" onClick={() => handleDemoLogin('director', 'dir123')}>
+                        <td className="px-4 py-3 font-medium text-white group-hover:text-blue-300 transition-colors">Consulta</td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">director</span></td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">dir123</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-              )}
+              </div>
             </>
           )}
         </div>
