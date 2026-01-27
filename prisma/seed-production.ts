@@ -9,8 +9,6 @@
  */
 
 import { PrismaClient } from '@prisma/client'
-import { Pool } from 'pg'
-import { PrismaPg } from '@prisma/adapter-pg'
 import crypto from 'crypto'
 // Importación directa de bcryptjs para evitar dependencias relativas complejas en Docker standalone
 import bcrypt from 'bcryptjs'
@@ -21,10 +19,7 @@ async function hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, SALT_ROUNDS)
 }
 
-const connectionString = process.env.DATABASE_URL
-const pool = new Pool({ connectionString })
-const adapter = new PrismaPg(pool)
-const prisma = new PrismaClient({ adapter })
+const prisma = new PrismaClient()
 
 // Generar contraseña aleatoria segura
 function generateSecurePassword(length: number = 16): string {
