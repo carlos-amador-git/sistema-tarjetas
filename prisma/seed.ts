@@ -1,8 +1,26 @@
+import { Pool } from 'pg'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
-import { hashPassword } from '../src/lib/auth/password'
-import bcrypt from 'bcryptjs'
+import bcryptjs from 'bcryptjs'
 
-const prisma = new PrismaClient()
+/**
+ * Hashes a password using bcrypt
+ * @param password The plain text password to hash
+ * @returns The hashed password
+ */
+async function hashPassword(password: string): Promise<string> {
+  const salt = await bcryptjs.genSalt(10);
+  return bcryptjs.hash(password, salt);
+}
+
+const connectionString = process.env.DATABASE_URL
+const pool = new Pool({ connectionString })
+const adapter = new PrismaPg(pool)
+
+const prisma = new PrismaClient({
+  adapter,
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+})
 
 // Contraseñas para usuarios demo
 const DEMO_PASSWORDS: Record<string, string> = {
