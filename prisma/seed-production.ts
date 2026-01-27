@@ -12,8 +12,8 @@ import { PrismaClient } from '@prisma/client'
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import crypto from 'crypto'
-// Importación directa de bcrypt para evitar dependencias relativas complejas en Docker standalone
-import bcrypt from 'bcrypt'
+// Importación directa de bcryptjs para evitar dependencias relativas complejas en Docker standalone
+import bcrypt from 'bcryptjs'
 
 const SALT_ROUNDS = 12
 

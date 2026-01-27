@@ -1,17 +1,21 @@
-import bcrypt from 'bcrypt'
-
-const SALT_ROUNDS = 12
+import bcrypt from 'bcryptjs';
 
 /**
- * Hash a password using bcrypt
+ * Hashes a password using bcrypt
+ * @param password The plain text password to hash
+ * @returns The hashed password
  */
 export async function hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, SALT_ROUNDS)
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
 }
 
 /**
- * Verify a password against a hash
+ * Compares a plain text password with a hash
+ * @param password The plain text password
+ * @param hash The hashed password to compare against
+ * @returns True if the password matches the hash, false otherwise
  */
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash)
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }

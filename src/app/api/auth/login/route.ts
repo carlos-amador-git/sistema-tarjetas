@@ -23,7 +23,7 @@ import {
   sanitizeUsername,
 } from '@/lib/security';
 import prisma from '@/lib/db';
-import { verifyPassword } from '@/lib/auth/password';
+import { comparePassword } from '@/lib/auth/password';
 import { generateAccessToken, generateRefreshToken } from '@/lib/auth/jwt';
 
 // Configuración de cookies seguras
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar contraseña con bcrypt
-    const passwordValid = await verifyPassword(password, user.password);
+    const passwordValid = await comparePassword(password, user.password);
 
     if (!passwordValid) {
       recordFailedAttempt(identifier);
