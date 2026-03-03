@@ -9,7 +9,7 @@
  */
 
 import { PrismaClient } from '@prisma/client'
-import crypto from 'crypto'
+import nodeCrypto from 'crypto'
 // Importación directa de bcryptjs para evitar dependencias relativas complejas en Docker standalone
 import bcrypt from 'bcryptjs'
 
@@ -26,7 +26,7 @@ function generateSecurePassword(length: number = 16): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
     let password = ''
     for (let i = 0; i < length; i++) {
-        password += chars.charAt(crypto.randomInt(0, chars.length))
+        password += chars.charAt(nodeCrypto.randomInt(0, chars.length))
     }
     return password
 }
