@@ -1,7 +1,5 @@
 # =============================================================================
 # Dockerfile - CardSystem (Next.js + Prisma + PostgreSQL)
-#
-# Multi-stage build optimizado para producción
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -18,10 +16,10 @@ COPY package.json package-lock.json ./
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
 
-# Instalar TODAS las dependencias (necesarias para Prisma generate)
+# Instalar dependencias
 RUN npm ci
 
-# Generar Prisma Client
+# Generar Prisma Client inicial
 RUN npx prisma generate
 
 # -----------------------------------------------------------------------------
@@ -33,11 +31,15 @@ RUN apk add --no-cache libc6-compat openssl
 
 WORKDIR /app
 
-# Copiar dependencias y Prisma client generado
+# Copiar dependencias y Prisma client generado del stage anterior
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Variables de entorno para build
+# --- VARIABLES DE ENTORNO PARA EL BUILD ---
+# Es CRUCIAL que DATABASE_URL esté aquí para que Prisma valide el esquema
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
+
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_SENTRY_DSN
 ARG NEXT_PUBLIC_APP_VERSION=0.1.0
@@ -79,6 +81,9 @@ ENV NEXT_PUBLIC_DEMO_CONSULTA_PASS=$NEXT_PUBLIC_DEMO_CONSULTA_PASS
 ENV NEXT_PUBLIC_DEMO_CONSULTA_LABEL=$NEXT_PUBLIC_DEMO_CONSULTA_LABEL
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Regenerar Prisma Client para asegurar sincronización con el código actual
+RUN npx prisma generate
+
 # Build de la aplicación
 RUN npm run build
 
@@ -87,41 +92,31 @@ RUN npm run build
 # -----------------------------------------------------------------------------
 FROM node:20-alpine AS runner
 
-RUN apk add --no-cache libc6-compat openssl
+RUN apk add --no-cache libc6-compat openssl wget
 
 WORKDIR /app
 
-# Crear usuario no-root para seguridad
+# Crear usuario no-root por seguridad
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Configuración de producción
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copiar archivos públicos
+# Copiar archivos necesarios para el runtime
 COPY --from=builder /app/public ./public
-
-# Copiar standalone build
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Copiar esquema de prisma (necesario para migraciones/db push)
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./
-
-# Copiar node_modules completo del builder (incluye @prisma/client generado y dependencias de pg)
-# Necesario para ejecutar migraciones, db push y seed en runtime
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 # Script de inicio
 COPY --chown=nextjs:nodejs scripts/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 
-# Cambiar a usuario no-root
 USER nextjs
 
-# Exponer puerto
 EXPOSE 3000
 
 ENV PORT=3000
@@ -131,6 +126,5 @@ ENV HOSTNAME="0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1
 
-# Usar entrypoint para setup inicial
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]
