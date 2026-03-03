@@ -68,7 +68,7 @@ services:
       # ✅ Opcional: Mejorar compatibilidad con caracteres especiales
       POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=C --lc-ctype=C'
     volumes:
-      - postgres_data_v2:/var/lib/postgresql/data
+      - postgres_data_v3:/var/lib/postgresql/data
       # ✅ Opcional: Script de inicialización para permisos adicionales
       # - './init-db.sql:/docker-entrypoint-initdb.d/init.sql'
     expose:
@@ -83,8 +83,8 @@ services:
       start_period: 10s
 
 volumes:
-  postgres_data_v2:
-    name: cardsystem_postgres_data_v2  # ✅ Nombre explícito para mejor gestión en Coolify
+  postgres_data_v3:
+    name: cardsystem_postgres_data_v3
     driver: local
 
 # ✅ Opcional: Network explícito para aislamiento
