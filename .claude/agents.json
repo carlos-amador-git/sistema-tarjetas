@@ -1,0 +1,122 @@
+{
+  "description": "Agentes especializados para el proyecto CardSystem - Formato Antigravity",
+  "version": "2.0.0",
+  "lastUpdated": "2026-01-23",
+
+  "agents": {
+    "recovery": {
+      "name": "ContextRecovery",
+      "trigger": "startup / inicio de sesión",
+      "prompt": "Lee .claude/context.json y .claude/PLAN_FASES.md. Resúmeme en 3 bullets: (1) qué estábamos haciendo (sprint actual), (2) qué quedó pendiente, (3) errores conocidos o issues activos.",
+      "tools": ["filesystem", "sequential-thinking"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": [".claude/context.json", ".claude/PLAN_FASES.md"]
+    },
+
+    "deploy": {
+      "name": "DeployExpert",
+      "trigger": "when deploying, configuring Docker, or preparing for production",
+      "prompt": "Eres experto en despliegue de aplicaciones Next.js con Docker. Este proyecto usa: Next.js 16 standalone, Prisma con SQLite, multi-stage Docker build. Template DB pre-creada en build. Verifica siempre JWT_SECRET y DATABASE_URL antes de deploy.",
+      "tools": ["filesystem", "sequential-thinking"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": ["Dockerfile", "docker-compose.yml", "docs/DEPLOY.md"],
+      "commands": {
+        "build": "docker build -t cardsystem .",
+        "run": "docker run -p 3000:3000 -e JWT_SECRET=\"$(openssl rand -base64 32)\" -e DATABASE_URL=\"file:/app/data/production.db\" -v cardsystem_data:/app/data cardsystem",
+        "compose": "docker-compose up -d app",
+        "logs": "docker-compose logs -f app",
+        "health": "curl http://localhost:3000/api/health"
+      }
+    },
+
+    "inventory": {
+      "name": "InventoryExpert",
+      "trigger": "when working with balance, captures, movements, or stock",
+      "prompt": "Eres experto en el sistema de inventario de tarjetas bancarias. El balance tiene 4 áreas: Almacén (bóveda trabajo + principal), En Proceso (órdenes activas), Logística (colocación + normal + devoluciones), Sucursales (colocación + stock). Las capturas actualizan balance via API. Movimientos se registran en historial automáticamente.",
+      "tools": ["filesystem", "sqlite"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": [
+        "src/hooks/useQueries.ts",
+        "src/app/api/balance/route.ts",
+        "src/app/api/historial/route.ts"
+      ]
+    },
+
+    "security": {
+      "name": "SecurityExpert",
+      "trigger": "when working with auth, tokens, CSRF, rate limiting, or audit",
+      "prompt": "Eres experto en seguridad web. Este proyecto implementa: tokens JWT en httpOnly cookies (no localStorage), rate limiting (5 intentos/min, bloqueo 5 min), CSRF con Double Submit Cookie, sanitización XSS, audit logging. Soporte opcional 2FA TOTP.",
+      "tools": ["filesystem", "sequential-thinking"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": [
+        "src/lib/security/rateLimit.ts",
+        "src/lib/security/csrf.ts",
+        "src/lib/security/auditLog.ts",
+        "src/app/api/auth/login/route.ts"
+      ]
+    },
+
+    "testing": {
+      "name": "TestingExpert",
+      "trigger": "when writing tests, improving coverage, or debugging test failures",
+      "prompt": "Eres experto en testing. Este proyecto usa: Jest con ts-jest (654 unit tests), Playwright para E2E (108 tests en 4 browsers). Coverage actual: 50.66%. Mockear APIs en tests de hooks. Rate limit responses (429) deben manejarse en E2E.",
+      "tools": ["filesystem"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": ["jest.config.js", "playwright.config.ts"],
+      "commands": {
+        "test": "npm test",
+        "coverage": "npm run test:coverage",
+        "e2e": "npm run e2e",
+        "e2eUI": "npm run e2e:ui"
+      }
+    },
+
+    "database": {
+      "name": "DatabaseExpert",
+      "trigger": "when modifying schema, running migrations, or working with Prisma",
+      "prompt": "Eres experto en Prisma con SQLite/libsql. Schema tiene 9 modelos: User, AuditLog, RateLimit, Producto, BalanceProducto, Captura, MovimientoHistorial, OrdenCompra, ForecastProducto. Usar 'db push' para desarrollo, migraciones para producción.",
+      "tools": ["filesystem", "sqlite"],
+      "model": "claude-sonnet-4.5",
+      "contextFiles": ["prisma/schema.prisma"],
+      "commands": {
+        "generate": "npx prisma generate",
+        "push": "npx prisma db push",
+        "studio": "npx prisma studio",
+        "seed": "npm run db:seed"
+      }
+    },
+
+    "auditor": {
+      "name": "CodeAuditor",
+      "trigger": "when doing deep code review or architecture analysis",
+      "prompt": "Auditas código buscando: (1) complejidad innecesaria, (2) queries ineficientes, (3) APIs mal usadas, (4) secrets expuestos, (5) vulnerabilidades OWASP Top 10. Usa sequential-thinking para análisis profundo.",
+      "tools": ["filesystem", "sequential-thinking"],
+      "model": "claude-opus-4.5"
+    }
+  },
+
+  "globalContext": {
+    "projectName": "CardSystem",
+    "fullName": "Sistema de Inventario de Tarjetas Bancarias",
+    "mainLanguage": "TypeScript",
+    "framework": "Next.js 16.1.4 (App Router)",
+    "database": "SQLite via Prisma + libsql",
+    "stateManagement": "React Query (server) + Zustand (client)",
+    "currentPhase": "Fase 5 - Producción",
+    "currentSprint": 19,
+    "criticalFiles": [
+      "prisma/schema.prisma",
+      "src/hooks/useQueries.ts",
+      "src/lib/api.ts",
+      ".claude/context.json",
+      ".claude/PLAN_FASES.md"
+    ]
+  },
+
+  "activationExamples": {
+    "startup": "Activa el agente 'ContextRecovery'. Lee el contexto y dime en qué estábamos.",
+    "deploy": "Activa 'DeployExpert'. Necesito desplegar a producción con Docker.",
+    "security": "Activa 'SecurityExpert'. Revisa la implementación de autenticación.",
+    "audit": "Activa 'CodeAuditor'. Haz una auditoría completa del proyecto."
+  }
+}

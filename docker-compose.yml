@@ -1,0 +1,77 @@
+# ============================================
+# CardSystem - Docker Compose
+# Next.js + Prisma + PostgreSQL
+# ============================================
+
+services:
+  # Aplicación principal (Next.js con API integrada)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sistema_tarjetas}}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-}
+        - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
+        - NEXT_PUBLIC_APP_VERSION=${NEXT_PUBLIC_APP_VERSION:-0.1.0}
+        - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-false}
+        - NEXT_PUBLIC_DEMO_ADMIN_USER=${NEXT_PUBLIC_DEMO_ADMIN_USER:-}
+        - NEXT_PUBLIC_DEMO_ADMIN_PASS=${NEXT_PUBLIC_DEMO_ADMIN_PASS:-}
+        - NEXT_PUBLIC_DEMO_ADMIN_LABEL=${NEXT_PUBLIC_DEMO_ADMIN_LABEL:-}
+        - NEXT_PUBLIC_DEMO_ALMACEN_USER=${NEXT_PUBLIC_DEMO_ALMACEN_USER:-}
+        - NEXT_PUBLIC_DEMO_ALMACEN_PASS=${NEXT_PUBLIC_DEMO_ALMACEN_PASS:-}
+        - NEXT_PUBLIC_DEMO_ALMACEN_LABEL=${NEXT_PUBLIC_DEMO_ALMACEN_LABEL:-}
+        - NEXT_PUBLIC_DEMO_LOGISTICA_USER=${NEXT_PUBLIC_DEMO_LOGISTICA_USER:-}
+        - NEXT_PUBLIC_DEMO_LOGISTICA_PASS=${NEXT_PUBLIC_DEMO_LOGISTICA_PASS:-}
+        - NEXT_PUBLIC_DEMO_LOGISTICA_LABEL=${NEXT_PUBLIC_DEMO_LOGISTICA_LABEL:-}
+        - NEXT_PUBLIC_DEMO_SUCURSALES_USER=${NEXT_PUBLIC_DEMO_SUCURSALES_USER:-}
+        - NEXT_PUBLIC_DEMO_SUCURSALES_PASS=${NEXT_PUBLIC_DEMO_SUCURSALES_PASS:-}
+        - NEXT_PUBLIC_DEMO_SUCURSALES_LABEL=${NEXT_PUBLIC_DEMO_SUCURSALES_LABEL:-}
+        - NEXT_PUBLIC_DEMO_CONSULTA_USER=${NEXT_PUBLIC_DEMO_CONSULTA_USER:-}
+        - NEXT_PUBLIC_DEMO_CONSULTA_PASS=${NEXT_PUBLIC_DEMO_CONSULTA_PASS:-}
+        - NEXT_PUBLIC_DEMO_CONSULTA_LABEL=${NEXT_PUBLIC_DEMO_CONSULTA_LABEL:-}
+    ports:
+      - "${PORT:-3000}:3000"
+    # Exponer el puerto 3000 explícitamente para que el proxy (Coolify/Traefik) sepa a dónde dirigir el tráfico
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      # Construir DATABASE_URL automáticamente usando el servicio 'db' definido abajo
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sistema_tarjetas}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-false}
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - ALLOW_HTTP_COOKIES=true
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-sistema_tarjetas}
+    volumes:
+      - postgres_data_v2:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data_v2:

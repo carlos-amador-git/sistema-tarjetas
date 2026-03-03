@@ -1,0 +1,273 @@
+{
+  "project": {
+    "name": "CardSystem",
+    "fullName": "Sistema de Inventario de Tarjetas Bancarias",
+    "version": "0.1.0",
+    "description": "Sistema white-label para gestión de inventario de tarjetas bancarias con forecasting, multi-tenant y control por roles",
+    "repository": "https://github.com/MarxCha/sistema-tarjetas",
+    "license": "Proprietary"
+  },
+
+  "status": {
+    "score": 100,
+    "rating": "Completado",
+    "lastSession": "2026-01-23T14:00:00Z",
+    "workingOn": "Mantenimiento",
+    "blockedOn": null,
+    "progress": "100% completado",
+    "currentPhase": "Fase 5 - Producción",
+    "currentSprint": null,
+    "pendingSprints": [],
+    "completedSprints": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+  },
+
+  "stack": {
+    "frontend": {
+      "framework": "Next.js 16.1.4",
+      "ui": "React 19.2.3",
+      "language": "TypeScript 5",
+      "styling": "Tailwind CSS 4",
+      "stateManagement": "Zustand 5.0.10",
+      "dataFetching": "@tanstack/react-query 5.90.19",
+      "charts": "Recharts 3.6.0",
+      "icons": "Lucide React",
+      "exports": ["xlsx", "jspdf", "jspdf-autotable"]
+    },
+    "backend": {
+      "orm": "Prisma 7.3.0",
+      "database": "SQLite (via @libsql/client)",
+      "auth": ["bcrypt", "jsonwebtoken", "speakeasy (2FA)"],
+      "monitoring": "@sentry/nextjs"
+    },
+    "testing": {
+      "unit": "Jest 30.2.0 (654 tests)",
+      "e2e": "Playwright 1.57.0 (108 tests)",
+      "coverage": "50.66%"
+    }
+  },
+
+  "startup": {
+    "development": [
+      "npm install",
+      "npm run db:generate",
+      "npm run db:push",
+      "npm run db:seed",
+      "npm run dev"
+    ],
+    "docker": {
+      "build": "docker-compose build app",
+      "run": "docker-compose up -d app",
+      "logs": "docker-compose logs -f app",
+      "health": "curl http://localhost:3000/api/health",
+      "restoreData": "docker cp /tmp/production.db sistema-tarjetas-app-1:/app/data/production.db && docker exec -u root sistema-tarjetas-app-1 chown nextjs:nodejs /app/data/production.db && docker-compose restart app"
+    },
+    "verify": {
+      "app": "http://localhost:3000",
+      "health": "curl http://localhost:3000/api/health",
+      "db": "npx prisma studio"
+    }
+  },
+
+  "knownIssues": [
+    {
+      "id": "DOCKER-001",
+      "severity": "resolved",
+      "description": "Prisma CLI no disponible en runtime de Docker",
+      "solution": "Usar template DB pre-creada durante build",
+      "learned": "2026-01-23"
+    },
+    {
+      "id": "ENTRYPOINT-001",
+      "severity": "resolved",
+      "description": "docker-entrypoint.sh usaba sintaxis bash en sh",
+      "solution": "Reescrito con sintaxis sh pura",
+      "learned": "2026-01-23"
+    },
+    {
+      "id": "SESSION-001",
+      "severity": "resolved",
+      "description": "Session route intentaba conectar a backend externo inexistente (localhost:8000)",
+      "solution": "Modificado para verificar JWT localmente con verifyAccessToken",
+      "learned": "2026-01-23"
+    },
+    {
+      "id": "COOKIES-001",
+      "severity": "resolved",
+      "description": "Cookies con Secure:true no funcionan en HTTP localhost",
+      "solution": "Agregado ALLOW_HTTP_COOKIES=true en docker-compose.yml para desactivar Secure flag en desarrollo",
+      "learned": "2026-01-23"
+    },
+    {
+      "id": "THEME-001",
+      "severity": "resolved",
+      "description": "ThemeSelector menu quedaba detrás del sidebar (z-index)",
+      "solution": "Usar createPortal para renderizar el menu en document.body con z-index:9999",
+      "learned": "2026-01-23"
+    },
+    {
+      "id": "PALETTE-001",
+      "severity": "resolved",
+      "description": "Paleta de colores solo aplicaba a algunos componentes",
+      "solution": "Actualizar todos los componentes para usar CSS variables (--brand-primary, --brand-secondary, etc.) en lugar de colores Tailwind hardcodeados",
+      "learned": "2026-01-23"
+    }
+  ],
+
+  "envRequired": [
+    "DATABASE_URL=file:./dev.db (desarrollo)",
+    "JWT_SECRET=<generado con openssl rand -base64 32>",
+    "NODE_ENV=production (producción)"
+  ],
+
+  "envOptional": [
+    "NEXT_PUBLIC_SENTRY_DSN=<dsn de sentry>",
+    "NEXT_PUBLIC_DEMO_MODE=true (para mostrar botones demo y paleta)",
+    "ALLOW_HTTP_COOKIES=true (para desarrollo sin HTTPS)"
+  ],
+
+  "database": {
+    "provider": "sqlite",
+    "mcpServer": "sqlite (global en ~/.claude.json)",
+    "connectionPath": "/Users/Marx/Projects/sistema-tarjetas/dev.db",
+    "dockerPath": "/app/data/production.db",
+    "backupPath": "/tmp/production.db",
+    "demoBackup": "backups/production-demo-2026-01-23.db",
+    "models": [
+      "User", "AuditLog", "RateLimit", "Producto",
+      "BalanceProducto", "Captura", "MovimientoHistorial",
+      "OrdenCompra", "ForecastProducto"
+    ]
+  },
+
+  "demoCredentials": {
+    "admin": { "user": "admin", "pass": "admin123", "rol": "Administrador" },
+    "almacen": { "user": "tsys_user", "pass": "tsys123", "rol": "Almacén" },
+    "logistica": { "user": "dist_user", "pass": "dist123", "rol": "Logística" },
+    "sucursales": { "user": "mod_user", "pass": "mod123", "rol": "Sucursales" },
+    "consulta": { "user": "director", "pass": "dir123", "rol": "Consulta" }
+  },
+
+  "demoPalettes": [
+    {
+      "id": "default",
+      "name": "CardSystem",
+      "style": "Azul corporativo confiable",
+      "primary": "#3b82f6"
+    },
+    {
+      "id": "rojo-bancario",
+      "name": "Rojo Bancario",
+      "style": "Scotiabank/HSBC/Santander",
+      "primary": "#dc2626"
+    },
+    {
+      "id": "verde-bosque",
+      "name": "Verde Bosque",
+      "style": "IXE Banco",
+      "primary": "#166534"
+    },
+    {
+      "id": "verde-fresco",
+      "name": "Verde Fresco",
+      "style": "Falabella/Starbucks",
+      "primary": "#16a34a"
+    },
+    {
+      "id": "purpura-premium",
+      "name": "Púrpura Premium",
+      "style": "NuBank/Fintech",
+      "primary": "#7c3aed"
+    },
+    {
+      "id": "naranja-dinamico",
+      "name": "Naranja Dinámico",
+      "style": "ING/BanCoppel",
+      "primary": "#ea580c"
+    }
+  ],
+
+  "roles": [
+    { "id": "admin", "area": "Administración", "access": "Todos los módulos" },
+    { "id": "almacen", "alias": "tsys", "area": "Almacén Central", "access": "Dashboard, Balance, Captura Almacén" },
+    { "id": "logistica", "alias": "distribucion", "area": "Distribución", "access": "Dashboard, Balance, Captura Logística" },
+    { "id": "sucursales", "alias": "modulos", "area": "Puntos de Venta", "access": "Dashboard, Balance, Captura Sucursales" },
+    { "id": "consulta", "area": "Dirección", "access": "Dashboard, Balance, Forecast, Historial (solo lectura)" }
+  },
+
+  "pendingWork": {
+    "sprint19": {
+      "name": "Deploy Antigravity",
+      "status": "completed",
+      "completedAt": "2026-01-23",
+      "notes": "Docker funcionando, login con demo buttons, tour mejorado, paleta de colores"
+    },
+    "sprint20": {
+      "name": "Documentación Final",
+      "status": "completed",
+      "completedAt": "2026-01-23",
+      "tasks": [
+        { "task": "Sistema de paletas bancarias", "status": "completed" },
+        { "task": "README completo", "status": "completed" },
+        { "task": "Documentación API", "status": "completed" },
+        { "task": "Manual de usuario", "status": "completed" }
+      ]
+    }
+  },
+
+  "recentChanges": {
+    "date": "2026-01-23",
+    "commits": [
+      "ffd6bb6 feat(deploy): Docker production-ready con demo mode",
+      "53d63ea feat(theme): sistema de paletas bancarias white-label"
+    ],
+    "files": [
+      "src/config/colorPalettes.ts - 6 paletas bancarias (CardSystem, Rojo, Verde Bosque, Verde Fresco, Púrpura, Naranja)",
+      "src/components/Sidebar.tsx - CSS variables para fondo e iconos",
+      "src/components/DemoTour.tsx - CSS variables para highlights y botones",
+      "src/components/DemoTourButton.tsx - CSS variables para gradiente",
+      "src/components/ThemeSelector.tsx - createPortal + menú mejorado",
+      "src/components/TwoFactorSetup.tsx - CSS variables para botones",
+      "src/components/forms/*.tsx - CSS variables para botones primarios",
+      "src/app/(dashboard)/layout.tsx - CSS variables para fondo y loader",
+      "Dockerfile - Template DB approach",
+      "docker-compose.yml - ALLOW_HTTP_COOKIES=true",
+      "docs/DEPLOY.md - Documentación de deploy"
+    ]
+  },
+
+  "deployment": {
+    "target": "Antigravity (local Docker)",
+    "docker": true,
+    "imageSize": "554MB",
+    "port": 3000,
+    "url": "http://localhost:3000",
+    "scripts": ["scripts/setup.sh", "scripts/deploy-antigravity.sh", "scripts/docker-entrypoint.sh"]
+  },
+
+  "importantPaths": {
+    "apiRoutes": "src/app/api/",
+    "components": "src/components/",
+    "hooks": "src/hooks/",
+    "stores": "src/stores/",
+    "security": "src/lib/security/",
+    "tenantConfig": "src/config/tenants/",
+    "colorPalettes": "src/config/colorPalettes.ts",
+    "prismaSchema": "prisma/schema.prisma",
+    "planFile": ".claude/PLAN_FASES.md",
+    "agentsFile": ".claude/agents.json",
+    "contextFile": ".claude/context.json"
+  },
+
+  "securityFeatures": [
+    "httpOnly cookies (access_token, refresh_token)",
+    "user_info cookie (legible por JS para UI)",
+    "Rate limiting (5 intentos/min)",
+    "CSRF tokens",
+    "XSS sanitization",
+    "Audit logging",
+    "2FA support (TOTP)"
+  ],
+
+  "lastUpdated": "2026-01-23T13:00:00Z",
+  "location": "~/Projects/sistema-tarjetas"
+}
