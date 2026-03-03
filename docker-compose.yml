@@ -32,7 +32,6 @@ services:
         - NEXT_PUBLIC_DEMO_CONSULTA_LABEL=${NEXT_PUBLIC_DEMO_CONSULTA_LABEL:-}
     ports:
       - "${PORT:-3000}:3000"
-    # Exponer el puerto 3000 explícitamente para que el proxy (Coolify/Traefik) sepa a dónde dirigir el tráfico
     expose:
       - "3000"
     environment:
@@ -52,27 +51,44 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 40s  # ⏱️ Aumentado para permitir migraciones de Prisma
 
   # Base de datos PostgreSQL
   db:
     image: postgres:15-alpine
+    container_name: cardsystem_db  # ✅ Nombre explícito para facilitar debugging
     environment:
       POSTGRES_USER: cardsystem
-      POSTGRES_PASSWORD: 
+      # 🔐 CORRECCIÓN CRÍTICA: Password obligatorio para crear el usuario
+      # Opción A: Usar variable de entorno con validación (recomendado para Coolify)
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Error: Debes definir la variable DB_PASSWORD}
+      # Opción B: Valor directo para desarrollo (NO usar en producción):
+      # POSTGRES_PASSWORD: Cardsystem2024!Secure#
       POSTGRES_DB: sistema_tarjetas
+      # ✅ Opcional: Mejorar compatibilidad con caracteres especiales
+      POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=C --lc-ctype=C'
     volumes:
       - postgres_data_v2:/var/lib/postgresql/data
-    # Solo exponer internamente (no exponer a internet)
+      # ✅ Opcional: Script de inicialización para permisos adicionales
+      # - './init-db.sql:/docker-entrypoint-initdb.d/init.sql'
     expose:
       - "5432"
-    # No exponer puerto a internet por seguridad
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cardsystem}"]
+      # ✅ Verificar que la DB específica esté ready, no solo el servidor
+      test: ["CMD-SHELL", "pg_isready -U cardsystem -d sistema_tarjetas"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
 volumes:
   postgres_data_v2:
+    name: cardsystem_postgres_data_v2  # ✅ Nombre explícito para mejor gestión en Coolify
+    driver: local
+
+# ✅ Opcional: Network explícito para aislamiento
+networks:
+  default:
+    name: cardsystem_network
+    driver: bridge
