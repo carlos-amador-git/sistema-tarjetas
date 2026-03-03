@@ -176,6 +176,13 @@ export async function POST(request: NextRequest) {
 
     // Verificar contraseña con bcrypt
     const passwordValid = await comparePassword(password, user.password);
+    
+    console.log('DEBUG login:', { 
+      username: user.username, 
+      passwordValid, 
+      inputPasswordLength: password.length,
+      hashLength: user.password.length 
+    });
 
     if (!passwordValid) {
       recordFailedAttempt(identifier);
