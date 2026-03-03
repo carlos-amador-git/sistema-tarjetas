@@ -64,8 +64,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-sistema_tarjetas}
     volumes:
       - postgres_data_v2:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # Solo exponer internamente (no exponer a internet)
+    expose:
+      - "5432"
+    # No exponer puerto a internet por seguridad
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
