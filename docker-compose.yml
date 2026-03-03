@@ -61,7 +61,7 @@ services:
       POSTGRES_USER: cardsystem
       # 🔐 CORRECCIÓN CRÍTICA: Password obligatorio para crear el usuario
       # Opción A: Usar variable de entorno con validación (recomendado para Coolify)
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Error: Debes definir la variable DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-}
       # Opción B: Valor directo para desarrollo (NO usar en producción):
       # POSTGRES_PASSWORD: Cardsystem2024!Secure#
       POSTGRES_DB: sistema_tarjetas
