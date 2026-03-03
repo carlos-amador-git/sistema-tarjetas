@@ -8,13 +8,27 @@
  * IMPORTANTE: Guardar la contraseña mostrada y cambiarla después del primer login.
  */
 
+import { Pool } from 'pg'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 import nodeCrypto from 'crypto'
 import bcrypt from 'bcryptjs'
 
-const SALT_ROUNDS = 12
+const connectionString = process.env.DATABASE_URL
 
-const prisma = new PrismaClient();
+if (!connectionString) {
+    throw new Error("DATABASE_URL no está definida");
+}
+
+const pool = new Pool({ connectionString })
+const adapter = new PrismaPg(pool)
+
+const prisma = new PrismaClient({
+    adapter,
+    log: ['error'],
+})
+
+const SALT_ROUNDS = 12
 
 async function hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, SALT_ROUNDS)
