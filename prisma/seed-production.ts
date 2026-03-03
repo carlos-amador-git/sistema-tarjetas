@@ -52,7 +52,19 @@ async function main() {
         })
 
         if (existingAdmin) {
-            console.log('✅ El usuario admin ya existe. Saltando seed.');
+            // Si hay un password forzado en env, actualizarlo (útil para recuperación)
+            if (process.env.ADMIN_INITIAL_PASSWORD) {
+                const hashedPassword = await hashPassword(process.env.ADMIN_INITIAL_PASSWORD);
+                await prisma.user.update({
+                    where: { username: 'admin' },
+                    data: { password: hashedPassword }
+                });
+                console.log('🔑 Password del admin actualizado con ADMIN_INITIAL_PASSWORD.');
+                console.log(`  Username: admin`);
+                console.log(`  Password: ${process.env.ADMIN_INITIAL_PASSWORD}`);
+            } else {
+                console.log('✅ El usuario admin ya existe. Saltando seed.');
+            }
             return;
         }
 
