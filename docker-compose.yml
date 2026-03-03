@@ -56,31 +56,22 @@ services:
   # Base de datos PostgreSQL
   db:
     image: postgres:15-alpine
-    container_name: cardsystem_db  # ✅ Nombre explícito para facilitar debugging
     environment:
       POSTGRES_USER: cardsystem
-      # 🔐 CORRECCIÓN CRÍTICA: Password obligatorio para crear el usuario
-      # Opción A: Usar variable de entorno con validación (recomendado para Coolify)
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-}
-      # Opción B: Valor directo para desarrollo (NO usar en producción):
-      # POSTGRES_PASSWORD: Cardsystem2024!Secure#
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-Cardsystem2024}
       POSTGRES_DB: sistema_tarjetas
-      # ✅ Opcional: Mejorar compatibilidad con caracteres especiales
       POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=C --lc-ctype=C'
     volumes:
       - postgres_data_v3:/var/lib/postgresql/data
-      # ✅ Opcional: Script de inicialización para permisos adicionales
-      # - './init-db.sql:/docker-entrypoint-initdb.d/init.sql'
     expose:
       - "5432"
     restart: unless-stopped
     healthcheck:
-      # ✅ Verificar que la DB específica esté ready, no solo el servidor
-      test: ["CMD-SHELL", "pg_isready -U cardsystem -d sistema_tarjetas"]
+      test: ["CMD-SHELL", "pg_isready -U cardsystem"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 10s
+      retries: 10
+      start_period: 30s
 
 volumes:
   postgres_data_v3:
